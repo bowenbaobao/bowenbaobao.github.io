@@ -8,7 +8,7 @@ create_pages:
 deploy_pages:
     script:
         - jekyll build
-        - cp -r _site/* /opt/apache/htdocs/doc/TODO/
+        - cp -r _site/* /opt/apache/htdocs/doc/bowen_bao/
     only:
         - master
     stage:
