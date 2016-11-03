@@ -1,15 +1,15 @@
 ﻿# Setup
 title:        Bowen Bao #TODO:大标题
-tagline:      gitlab pages for sekorm share #TODO:二级标题
-url:          "http://172.16.1.114/doc/bowen_bao/" #TODO:TODO改为用户名
-baseurl:      "/doc/bowen_bao" #TODO:根目录，改为用户名
+tagline:      github pages for bao share #TODO:二级标题
+url:          "https://bowenbaobao.github.io/" #TODO:TODO改为用户名
+baseurl:      "/" #TODO:根目录，改为用户名
 paginate:     1
 
 # About/contact
 author:
   name:       Bowen Bao  #TODO名字
-  email:      bowen_bao@sekorm.com  #TODO邮箱
-  gitlab:     172.16.1.114:81/bowen_bao/ #TODO:用户名
+  email:      baowei168@163.com  #TODO邮箱
+  github:     https://github.com/bowenbaobao/ #TODO:用户名
 
 # Gems
 gems:
