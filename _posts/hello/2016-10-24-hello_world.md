@@ -3,7 +3,7 @@ layout: post
 title: Hello World题目
 permalink: /:categories/hello_world_url/
 date: 2016-10-24 09:30:15 +0800
-category: Hello_Category
+category: Blog_Category
 tags: [hello, world]
 ---
 
