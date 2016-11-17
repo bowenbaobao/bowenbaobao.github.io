@@ -24,3 +24,10 @@ tags: [hello, world]
 [链接]({{site.baseurl}}/Hello_Category/hello_world_url/)
 
 ![图片]({{site.baseurl}}/img/hello/test.png)
+
+代码区
+```
+this is codes...
+```
+
+
