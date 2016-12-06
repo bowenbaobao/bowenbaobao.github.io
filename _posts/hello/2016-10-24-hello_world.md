@@ -23,6 +23,8 @@ tags: [hello, world]
 
 [链接]({{site.baseurl}}/Hello_Category/hello_world_url/)
 
+[百度](http://www.baidu.com "http://www.baidu.com")
+
 ![图片]({{site.baseurl}}/img/hello/test.png)
 
 代码区
