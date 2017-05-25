@@ -3927,4 +3927,2518 @@ public class AlipaySubmit {
 
 ```
 
+#### wx
 
+##### request
+
+
+```
+
+package com.sekorm.core.util.wx.request;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sekorm.core.util.wx.util.Configure;
+import com.sekorm.core.util.wx.util.RandomStringGenerator;
+import com.sekorm.core.util.wx.util.Signature;
+
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/25
+ * Time: 16:48
+ */
+public class DownloadBillReqData {
+    //每个字段具体的意思请查看API文档
+    private String appid = "";
+    private String mch_id = "";
+    private String device_info = "";
+    private String nonce_str = "";
+    private String sign = "";
+    private String bill_date = "";
+    private String bill_type = "";
+    private String sdk_version = "";
+
+    /**
+     * 请求对账单下载服务
+     * @param deviceInfo 商户自己定义的扫码支付终端设备号，方便追溯这笔交易发生在哪台终端设备上
+     * @param billDate 下载对账单的日期，格式：yyyyMMdd 例如：20140603
+     * @param billType 账单类型
+     *                 ALL，返回当日所有订单信息，默认值
+    SUCCESS，返回当日成功支付的订单
+    REFUND，返回当日退款订单
+    REVOKED，已撤销的订单
+     */
+    public DownloadBillReqData(String deviceInfo,String billDate,String billType){
+
+        setSdk_version(Configure.getSdkVersion());
+
+        //微信分配的公众号ID（开通公众号之后可以获取到）
+        setAppid(Configure.appID);
+
+        //微信支付分配的商户号ID（开通公众号的微信支付功能之后可以获取到）
+        setMch_id(Configure.mchID);
+
+        //商户自己定义的扫码支付终端设备号，方便追溯这笔交易发生在哪台终端设备上
+        setDevice_info(deviceInfo);
+
+        setBill_date(billDate);
+
+        setBill_type(billType);
+
+
+        //随机字符串，不长于32 位
+        setNonce_str(RandomStringGenerator.getRandomStringByLength(32));
+
+        //根据API给的签名规则进行签名
+        String sign = Signature.getSign(toMap());
+        setSign(sign);//把签名数据设置到Sign这个属性中
+
+
+    }
+
+    public String getAppid() {
+        return appid;
+    }
+
+    public void setAppid(String appid) {
+        this.appid = appid;
+    }
+
+    public String getMch_id() {
+        return mch_id;
+    }
+
+    public void setMch_id(String mch_id) {
+        this.mch_id = mch_id;
+    }
+
+    public String getDevice_info() {
+        return device_info;
+    }
+
+    public void setDevice_info(String device_info) {
+        this.device_info = device_info;
+    }
+
+    public String getNonce_str() {
+        return nonce_str;
+    }
+
+    public void setNonce_str(String nonce_str) {
+        this.nonce_str = nonce_str;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getBill_date() {
+        return bill_date;
+    }
+
+    public void setBill_date(String bill_date) {
+        this.bill_date = bill_date;
+    }
+
+    public String getBill_type() {
+        return bill_type;
+    }
+
+    public void setBill_type(String bill_type) {
+        this.bill_type = bill_type;
+    }
+
+    public String getSdk_version(){
+        return sdk_version;
+    }
+
+    public void setSdk_version(String sdk_version) {
+        this.sdk_version = sdk_version;
+    }
+
+    public Map<String,Object> toMap(){
+        Map<String,Object> map = new HashMap<String, Object>();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Object obj;
+            try {
+                obj = field.get(this);
+                if(obj!=null){
+                    map.put(field.getName(), obj);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
+    }
+
+}
+
+
+
+******************************************************************************
+
+package com.sekorm.core.util.wx.request;
+
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sekorm.core.util.wx.util.Configure;
+import com.sekorm.core.util.wx.util.RandomStringGenerator;
+import com.sekorm.core.util.wx.util.Signature;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/25
+ * Time: 13:54
+ */
+public class ScanPayQueryReqData {
+
+    //每个字段具体的意思请查看API文档
+    private String appid = "";
+    private String mch_id = "";
+    private String transaction_id = "";
+    private String out_trade_no = "";
+    private String nonce_str = "";
+    private String sign = "";
+    private String sdk_version = "";
+
+    /**
+     * 请求支付查询服务
+     * @param transactionID 是微信系统为每一笔支付交易分配的订单号，通过这个订单号可以标识这笔交易，它由支付订单API支付成功时返回的数据里面获取到。建议优先使用
+     * @param outTradeNo 商户系统内部的订单号,transaction_id 、out_trade_no 二选一，如果同时存在优先级：transaction_id>out_trade_no
+     * @return API返回的XML数据
+     * @throws Exception
+     */
+    public ScanPayQueryReqData(String transactionID, String outTradeNo){
+
+        //--------------------------------------------------------------------
+        //以下是测试数据，请商户按照自己的实际情况填写具体的值进去
+        //--------------------------------------------------------------------
+
+        setSdk_version(Configure.getSdkVersion());
+
+        //微信分配的公众号ID（开通公众号之后可以获取到）
+        setAppid(Configure.appID);
+
+        //微信支付分配的商户号ID（开通公众号的微信支付功能之后可以获取到）
+        setMch_id(Configure.mchID);
+
+        //transaction_id是微信系统为每一笔支付交易分配的订单号，通过这个订单号可以标识这笔交易，它由支付订单API支付成功时返回的数据里面获取到。
+        setTransaction_id(transactionID);
+
+        //商户系统自己生成的唯一的订单号
+        setOut_trade_no(outTradeNo);
+
+        //随机字符串，不长于32 位
+        setNonce_str(RandomStringGenerator.getRandomStringByLength(32));
+
+        //根据API给的签名规则进行签名
+        String sign = Signature.getSign(toMap());
+        setSign(sign);//把签名数据设置到Sign这个属性中
+
+
+    }
+
+    public String getAppid() {
+        return appid;
+    }
+
+    public void setAppid(String appid) {
+        this.appid = appid;
+    }
+
+    public String getMch_id() {
+        return mch_id;
+    }
+
+    public void setMch_id(String mch_id) {
+        this.mch_id = mch_id;
+    }
+
+    public String getTransaction_id() {
+        return transaction_id;
+    }
+
+    public void setTransaction_id(String transaction_id) {
+        this.transaction_id = transaction_id;
+    }
+
+    public String getOut_trade_no() {
+        return out_trade_no;
+    }
+
+    public void setOut_trade_no(String out_trade_no) {
+        this.out_trade_no = out_trade_no;
+    }
+
+    public String getNonce_str() {
+        return nonce_str;
+    }
+
+    public void setNonce_str(String nonce_str) {
+        this.nonce_str = nonce_str;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getSdk_version(){
+        return sdk_version;
+    }
+
+    public void setSdk_version(String sdk_version) {
+        this.sdk_version = sdk_version;
+    }
+
+    public Map<String,Object> toMap(){
+        Map<String,Object> map = new HashMap<String, Object>();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Object obj;
+            try {
+                obj = field.get(this);
+                if(obj!=null){
+                    map.put(field.getName(), obj);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
+    }
+}
+
+
+
+**********************************************************************
+
+
+package com.sekorm.core.util.wx.request;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sekorm.core.util.wx.util.Configure;
+import com.sekorm.core.util.wx.util.RandomStringGenerator;
+
+
+public class ScanPayReqData {
+	/*
+	字段名	变量名	必填	类型	示例值	描述
+	公众账号ID	appid	是	String(32)	wxd678efh567hg6787	微信支付分配的公众账号ID（企业号corpid即为此appId）
+	商户号	mch_id	是	String(32)	1230000109	微信支付分配的商户号
+	设备号	device_info	否	String(32)	013467007045764	自定义参数，可以为终端设备号(门店号或收银设备ID)，PC网页或公众号内支付可以传"WEB"
+	随机字符串	nonce_str	是	String(32)	5K8264ILTKCH16CQ2502SI8ZNMTM67VS	随机字符串，长度要求在32位以内。推荐随机数生成算法
+	签名	sign	是	String(32)	C380BEC2BFD727A4B6845133519F3AD6	通过签名算法计算得出的签名值，详见签名生成算法
+	签名类型	sign_type	否	String(32)	HMAC-SHA256	签名类型，默认为MD5，支持HMAC-SHA256和MD5。
+	商品描述	body	是	String(128)	腾讯充值中心-QQ会员充值	
+	商品简单描述，该字段请按照规范传递，具体请见参数规定
+	商品详情	detail	否	String(6000)	 	单品优惠字段(暂未上线)
+	附加数据	attach	否	String(127)	深圳分店	附加数据，在查询API和支付通知中原样返回，可作为自定义参数使用。
+	商户订单号	out_trade_no	是	String(32)	20150806125346	商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一。 详见商户订单号
+	标价币种	fee_type	否	String(16)	CNY	符合ISO 4217标准的三位字母代码，默认人民币：CNY，详细列表请参见货币类型
+	标价金额	total_fee	是	Int	88	订单总金额，单位为分，详见支付金额
+	终端IP	spbill_create_ip	是	String(16)	123.12.12.123	APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
+	交易起始时间	time_start	否	String(14)	20091225091010	订单生成时间，格式为yyyyMMddHHmmss，如2009年12月25日9点10分10秒表示为20091225091010。其他详见时间规则
+	交易结束时间	time_expire	否	String(14)	20091227091010	
+	订单失效时间，格式为yyyyMMddHHmmss，如2009年12月27日9点10分10秒表示为20091227091010。其他详见时间规则
+	注意：最短失效时间间隔必须大于5分钟
+	商品标记	goods_tag	否	String(32)	WXG	商品标记，使用代金券或立减优惠功能时需要的参数，说明详见代金券或立减优惠
+	通知地址	notify_url	是	String(256)	http://www.weixin.qq.com/wxpay/pay.php	异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数。
+	交易类型	trade_type	是	String(16)	JSAPI	取值如下：JSAPI，NATIVE，APP等，说明详见参数规定
+	商品ID	product_id	否	String(32)	12235413214070356458058	trade_type=NATIVE时（即扫码支付），此参数必传。此参数为二维码中包含的商品ID，商户自行定义。
+	指定支付方式	limit_pay	否	String(32)	no_credit	上传此参数no_credit--可限制用户不能使用信用卡支付
+	用户标识	openid	否	String(128)	oUpF8uMuAJO_M2pxb1Q9zNjWeS6o	trade_type=JSAPI时（即公众号支付），此参数必传，此参数为微信用户在商户对应appid下的唯一标识。openid如何获取，可参考【获取openid】。企业号请使用【企业号OAuth2.0接口】获取企业号内成员userid，再调用【企业号userid转openid接口】进行转换
+	*/
+	String appid = "";				//公众账号ID
+	String mch_id = "";				//商户号
+	String device_info = "WEB";		//设备号：待定是否加上
+	String nonce_str = "";			//随机字符串
+	String sign = "";				//签名
+	String body = "";				//商品描述
+	String out_trade_no = "";		//商户订单号
+	Integer total_fee;				//标价金额
+	String spbill_create_ip = "";	//终端IP
+	String notify_url = "";			//通知地址
+	String trade_type = "";			//交易类型
+	
+	/**
+	 * 请求统一下单服务
+	 * @param deviceInfo
+	 */
+	public ScanPayReqData() {
+		//微信分配的公众号ID（开通公众号之后可以获取到）
+        setAppid(Configure.appID);
+
+        //微信支付分配的商户号ID（开通公众号的微信支付功能之后可以获取到）
+        setMch_id(Configure.mchID);
+
+        //随机字符串，不长于32 位
+        setNonce_str(RandomStringGenerator.getRandomStringByLength(32));
+
+        //根据API给的签名规则进行签名
+//        String sign = Signature.getSign(toMap());
+//        setSign(sign);//把签名数据设置到Sign这个属性中
+	}
+	
+	public String getAppid() {
+		return appid;
+	}
+	public void setAppid(String appid) {
+		this.appid = appid;
+	}
+	public String getMch_id() {
+		return mch_id;
+	}
+	public void setMch_id(String mch_id) {
+		this.mch_id = mch_id;
+	}
+	public String getDevice_info() {
+		return device_info;
+	}
+	public void setDevice_info(String device_info) {
+		this.device_info = device_info;
+	}
+	public String getNonce_str() {
+		return nonce_str;
+	}
+	public void setNonce_str(String nonce_str) {
+		this.nonce_str = nonce_str;
+	}
+	public String getSign() {
+		return sign;
+	}
+	public void setSign(String sign) {
+		this.sign = sign;
+	}
+	public String getBody() {
+		return body;
+	}
+	public void setBody(String body) {
+		this.body = body;
+	}
+	public String getOut_trade_no() {
+		return out_trade_no;
+	}
+	public void setOut_trade_no(String out_trade_no) {
+		this.out_trade_no = out_trade_no;
+	}
+	public Integer getTotal_fee() {
+		return total_fee;
+	}
+	public void setTotal_fee(Integer total_fee) {
+		this.total_fee = total_fee;
+	}
+	public String getSpbill_create_ip() {
+		return spbill_create_ip;
+	}
+	public void setSpbill_create_ip(String spbill_create_ip) {
+		this.spbill_create_ip = spbill_create_ip;
+	}
+	public String getNotify_url() {
+		return notify_url;
+	}
+	public void setNotify_url(String notify_url) {
+		this.notify_url = notify_url;
+	}
+	public String getTrade_type() {
+		return trade_type;
+	}
+	public void setTrade_type(String trade_type) {
+		this.trade_type = trade_type;
+	}
+	
+	public Map<String,Object> toMap(){
+        Map<String,Object> map = new HashMap<String, Object>();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Object obj;
+            try {
+                obj = field.get(this);
+                if(obj!=null){
+                    map.put(field.getName(), obj);
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
+    }
+}
+
+
+
+```
+
+
+##### response
+
+```
+
+package com.sekorm.core.util.wx.response;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/25
+ * Time: 16:48
+ */
+public class DownloadBillResData {
+
+    //协议层
+    private String return_code = "";
+    private String return_msg = "";
+
+    public String getReturn_code() {
+        return return_code;
+    }
+
+    public void setReturn_code(String return_code) {
+        this.return_code = return_code;
+    }
+
+    public String getReturn_msg() {
+        return return_msg;
+    }
+
+    public void setReturn_msg(String return_msg) {
+        this.return_msg = return_msg;
+    }
+}
+
+
+
+**************************************************************
+
+
+package com.sekorm.core.util.wx.response;
+
+public class NotifyReturnData {
+
+	/*
+返回状态码	return_code	是	String(16)	SUCCESS	SUCCESS/FAIL SUCCESS表示商户接收通知成功并校验成功
+返回信息	return_msg	否	String(128)	OK		返回信息，如非空，为错误原因：签名失败参数格式校验错误
+	 */
+	private String return_code = "";	//返回状态码
+    private String return_msg = "";		//返回信息
+	
+    public NotifyReturnData(String return_code, String return_msg) {
+    	this.return_code = return_code;
+    	this.return_msg = return_msg;
+    }
+
+	public String getReturn_code() {
+		return return_code;
+	}
+
+	public void setReturn_code(String return_code) {
+		this.return_code = return_code;
+	}
+
+	public String getReturn_msg() {
+		return return_msg;
+	}
+
+	public void setReturn_msg(String return_msg) {
+		this.return_msg = return_msg;
+	}
+}
+
+
+
+**************************************************************
+
+
+package com.sekorm.core.util.wx.response;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/25
+ * Time: 13:54
+ */
+public class ScanPayQueryResData {
+
+    //协议层
+    private String return_code = "";
+    private String return_msg = "";
+
+    //协议返回的具体数据（以下字段在return_code 为SUCCESS 的时候有返回）
+    private String appid = "";
+    private String mch_id = "";
+    private String sub_mch_id = "";//新增
+    private String nonce_str = "";
+    private String sign = "";
+    private String result_code = "";
+    private String err_code = "";
+    private String err_code_des = "";
+
+    //以下字段在return_code 和result_code 都为SUCCESS 的时候有返回
+    private String trade_state = "";
+
+    //trade_state的几种可能取值：
+    //    SUCCESS--支付成功
+    //    REFUND--转入退款
+    //    NOTPAY--未支付
+    //    CLOSED--已关闭
+    //    REVOKED--已撤销
+    //    USERPAYING--用户支付中
+    //    NOPAY--未支付(确认支付超时)
+    //    PAYERROR--支付失败(其他原因，
+    //            如银行返回失败)
+
+    //以下字段在trade_state 为SUCCESS 或者REFUND 的时候有返回
+    private String device_info = "";
+    private String openid = "";
+    private String is_subscribe = "";
+    private String trade_type = "";
+    private String bank_type = "";
+    private String total_fee = "";
+    private String coupon_fee = "";
+    private String fee_type = "";
+    private String cash_fee = "";
+    private String cash_fee_type = "";
+    private String transaction_id = "";
+    private String out_trade_no = "";
+    private String attach = "";
+    private String time_end = "";
+
+    public String getReturn_code() {
+        return return_code;
+    }
+
+    public void setReturn_code(String return_code) {
+        this.return_code = return_code;
+    }
+
+    public String getReturn_msg() {
+        return return_msg;
+    }
+
+    public void setReturn_msg(String return_msg) {
+        this.return_msg = return_msg;
+    }
+
+    public String getAppid() {
+        return appid;
+    }
+
+    public void setAppid(String appid) {
+        this.appid = appid;
+    }
+
+    public String getMch_id() {
+        return mch_id;
+    }
+
+    public void setMch_id(String mch_id) {
+        this.mch_id = mch_id;
+    }
+
+    public String getSub_mch_id() {
+        return sub_mch_id;
+    }
+
+    public void setSub_mch_id(String sub_mch_id) {
+        this.sub_mch_id = sub_mch_id;
+    }
+
+    public String getNonce_str() {
+        return nonce_str;
+    }
+
+    public void setNonce_str(String nonce_str) {
+        this.nonce_str = nonce_str;
+    }
+
+    public String getSign() {
+        return sign;
+    }
+
+    public void setSign(String sign) {
+        this.sign = sign;
+    }
+
+    public String getResult_code() {
+        return result_code;
+    }
+
+    public void setResult_code(String result_code) {
+        this.result_code = result_code;
+    }
+
+    public String getErr_code() {
+        return err_code;
+    }
+
+    public void setErr_code(String err_code) {
+        this.err_code = err_code;
+    }
+
+    public String getErr_code_des() {
+        return err_code_des;
+    }
+
+    public void setErr_code_des(String err_code_des) {
+        this.err_code_des = err_code_des;
+    }
+
+    public String getTrade_state() {
+        return trade_state;
+    }
+
+    public void setTrade_state(String trade_state) {
+        this.trade_state = trade_state;
+    }
+
+    public String getDevice_info() {
+        return device_info;
+    }
+
+    public void setDevice_info(String device_info) {
+        this.device_info = device_info;
+    }
+
+    public String getOpenid() {
+        return openid;
+    }
+
+    public void setOpenid(String openid) {
+        this.openid = openid;
+    }
+
+    public String getIs_subscribe() {
+        return is_subscribe;
+    }
+
+    public void setIs_subscribe(String is_subscribe) {
+        this.is_subscribe = is_subscribe;
+    }
+
+    public String getTrade_type() {
+        return trade_type;
+    }
+
+    public void setTrade_type(String trade_type) {
+        this.trade_type = trade_type;
+    }
+
+    public String getBank_type() {
+        return bank_type;
+    }
+
+    public void setBank_type(String bank_type) {
+        this.bank_type = bank_type;
+    }
+
+    public String getTotal_fee() {
+        return total_fee;
+    }
+
+    public void setTotal_fee(String total_fee) {
+        this.total_fee = total_fee;
+    }
+
+    public String getCoupon_fee() {
+        return coupon_fee;
+    }
+
+    public void setCoupon_fee(String coupon_fee) {
+        this.coupon_fee = coupon_fee;
+    }
+
+    public String getFee_type() {
+        return fee_type;
+    }
+
+    public void setFee_type(String fee_type) {
+        this.fee_type = fee_type;
+    }
+
+    public String getTransaction_id() {
+        if(transaction_id != null) {
+            return transaction_id;
+        }else{
+            return "";
+        }
+    }
+
+    public void setTransaction_id(String transaction_id) {
+        this.transaction_id = transaction_id;
+    }
+
+    public String getOut_trade_no() {
+        return out_trade_no;
+    }
+
+    public void setOut_trade_no(String out_trade_no) {
+        this.out_trade_no = out_trade_no;
+    }
+
+    public String getAttach() {
+        return attach;
+    }
+
+    public void setAttach(String attach) {
+        this.attach = attach;
+    }
+
+    public String getTime_end() {
+        return time_end;
+    }
+
+    public void setTime_end(String time_end) {
+        this.time_end = time_end;
+    }
+
+    public String getCash_fee() {
+        return cash_fee;
+    }
+
+    public void setCash_fee(String cash_fee) {
+        this.cash_fee = cash_fee;
+    }
+
+    public String getCash_fee_type() {
+        return cash_fee_type;
+    }
+
+    public void setCash_fee_type(String cash_fee_type) {
+        this.cash_fee_type = cash_fee_type;
+    }
+}
+
+
+
+
+*******************************************************************
+
+
+package com.sekorm.core.util.wx.response;
+
+public class ScanPayResData {
+
+	/*
+返回状态码	return_code	是	String(16)	SUCCESS	SUCCESS/FAIL
+此字段是通信标识，非交易标识，交易是否成功需要查看result_code来判断
+返回信息	return_msg	否	String(128)	签名失败	
+返回信息，如非空，为错误原因，签名失败、参数格式校验错误
+
+以下字段在return_code为SUCCESS的时候有返回
+
+字段名	变量名	必填	类型	示例值	描述
+公众账号ID	appid	是	String(32)	wx8888888888888888	调用接口提交的公众账号ID
+商户号	mch_id	是	String(32)	1900000109	调用接口提交的商户号
+设备号	device_info	否	String(32)	013467007045764	自定义参数，可以为请求支付的终端设备号等
+随机字符串	nonce_str	是	String(32)	5K8264ILTKCH16CQ2502SI8ZNMTM67VS	微信返回的随机字符串
+签名	sign	是	String(32)	C380BEC2BFD727A4B6845133519F3AD6	微信返回的签名值，详见签名算法
+业务结果	result_code	是	String(16)	SUCCESS	SUCCESS/FAIL
+错误代码	err_code	否	String(32)	SYSTEMERROR	详细参见下文错误列表
+错误代码描述	err_code_des	否	String(128)	系统错误	错误信息描述
+
+以下字段在return_code 和result_code都为SUCCESS的时候有返回
+
+字段名	变量名	必填	类型	示例值	描述
+交易类型	trade_type	是	String(16)	JSAPI	交易类型，取值为：JSAPI，NATIVE，APP等，说明详见参数规定
+预支付交易会话标识	prepay_id	是	String(64)	wx201410272009395522657a690389285100	微信生成的预支付会话标识，用于后续接口调用中使用，该值有效期为2小时
+二维码链接	code_url	否	String(64)	URl：weixin：//wxpay/s/An4baqw	trade_type为NATIVE时有返回，用于生成二维码，展示给用户进行扫码支付
+	 */
+	
+    //协议层
+    private String return_code = "";
+    private String return_msg = "";
+
+    //协议返回的具体数据（以下字段在return_code 为SUCCESS 的时候有返回）
+    private String appid = "";
+    private String mch_id = "";
+    private String nonce_str = "";
+    private String sign = "";
+    private String result_code = "";
+    private String err_code = "";
+    private String err_code_des = "";
+
+    //以下字段在return_code 和result_code 都为SUCCESS 的时候有返回
+    private String trade_type = "";
+    private String prepay_id = "";
+    private String code_url = "";
+    
+    
+    private String rs;
+    
+	public String getReturn_code() {
+		return return_code;
+	}
+	public void setReturn_code(String return_code) {
+		this.return_code = return_code;
+	}
+	public String getReturn_msg() {
+		return return_msg;
+	}
+	public void setReturn_msg(String return_msg) {
+		this.return_msg = return_msg;
+	}
+	public String getAppid() {
+		return appid;
+	}
+	public void setAppid(String appid) {
+		this.appid = appid;
+	}
+	public String getMch_id() {
+		return mch_id;
+	}
+	public void setMch_id(String mch_id) {
+		this.mch_id = mch_id;
+	}
+	public String getNonce_str() {
+		return nonce_str;
+	}
+	public void setNonce_str(String nonce_str) {
+		this.nonce_str = nonce_str;
+	}
+	public String getSign() {
+		return sign;
+	}
+	public void setSign(String sign) {
+		this.sign = sign;
+	}
+	public String getResult_code() {
+		return result_code;
+	}
+	public void setResult_code(String result_code) {
+		this.result_code = result_code;
+	}
+	public String getErr_code() {
+		return err_code;
+	}
+	public void setErr_code(String err_code) {
+		this.err_code = err_code;
+	}
+	public String getErr_code_des() {
+		return err_code_des;
+	}
+	public void setErr_code_des(String err_code_des) {
+		this.err_code_des = err_code_des;
+	}
+	public String getTrade_type() {
+		return trade_type;
+	}
+	public void setTrade_type(String trade_type) {
+		this.trade_type = trade_type;
+	}
+	public String getPrepay_id() {
+		return prepay_id;
+	}
+	public void setPrepay_id(String prepay_id) {
+		this.prepay_id = prepay_id;
+	}
+	public String getCode_url() {
+		return code_url;
+	}
+	public void setCode_url(String code_url) {
+		this.code_url = code_url;
+	}
+	public String getRs() {
+		return rs;
+	}
+	public void setRs(String rs) {
+		this.rs = rs;
+	}
+	
+	
+}
+
+
+
+
+```
+
+
+##### service
+
+```
+
+package com.sekorm.core.util.wx.service;
+
+
+import com.sekorm.core.util.wx.util.HttpsRequest;
+import com.sekorm.core.util.wx.util.HttpsRequestApp;
+
+/**
+ * User: rizenguo
+ * Date: 2014/12/10
+ * Time: 15:44
+ * 服务的基类
+ */
+public class BaseService{
+
+    //API的地址
+    private String apiURL;
+
+    //发请求的HTTPS请求器
+    private HttpsRequest client;
+    
+  //发请求的HTTPS请求器
+    private HttpsRequestApp client_app;
+
+    public BaseService(String api) throws Exception {
+        apiURL = api;
+        client = new HttpsRequest();
+    }
+
+    protected String sendPost(Object xmlObj) throws Exception {
+        return client.sendPost(apiURL, xmlObj);
+    }
+    
+    public BaseService(String api,String app) throws Exception {
+        apiURL = api;
+        client_app = new HttpsRequestApp();
+    }
+
+    protected String sendPost(Object xmlObj,String app) throws Exception {
+        return client_app.sendPost(apiURL, xmlObj);
+    }
+    
+    
+}
+
+
+*****************************************************************
+
+
+package com.sekorm.core.util.wx.service;
+
+import com.sekorm.core.util.wx.request.DownloadBillReqData;
+import com.sekorm.core.util.wx.util.Configure;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 16:04
+ */
+public class DownloadBillService extends BaseService{
+
+    public DownloadBillService() throws Exception {
+        super(Configure.DOWNLOAD_BILL_API);
+    }
+
+    //ALL，返回当日所有订单信息，默认值
+    public static final String BILL_TYPE_ALL = "ALL";
+
+    //SUCCESS，返回当日成功支付的订单
+    public static final String BILL_TYPE_SUCCESS = "SUCCESS";
+
+    //REFUND，返回当日退款订单
+    public static final String BILL_TYPE_REFUND = "REFUND";
+
+    //REVOKED，已撤销的订单
+    public static final String BILL_TYPE_REVOKE = "REVOKE";
+
+
+    /**
+     * 请求对账单下载服务
+     * @param downloadBillReqData 这个数据对象里面包含了API要求提交的各种数据字段
+     * @return API返回的XML数据
+     * @throws Exception
+     */
+    public String request(DownloadBillReqData downloadBillReqData) throws Exception {
+
+        //--------------------------------------------------------------------
+        //发送HTTPS的Post请求到API地址
+        //--------------------------------------------------------------------
+        String responseString = sendPost(downloadBillReqData);
+
+        return responseString;
+    }
+
+}
+
+
+
+*****************************************************************************
+
+
+package com.sekorm.core.util.wx.service;
+
+import com.sekorm.core.util.wx.request.ScanPayQueryReqData;
+import com.sekorm.core.util.wx.util.Configure;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 16:04
+ */
+public class ScanPayQueryService extends BaseService{
+
+    public ScanPayQueryService() throws Exception {
+        super(Configure.PAY_QUERY_API);
+    }
+
+    /**
+     * 请求支付查询服务
+     * @param scanPayQueryReqData 这个数据对象里面包含了API要求提交的各种数据字段
+     * @return API返回的XML数据
+     * @throws Exception
+     */
+    public String request(ScanPayQueryReqData scanPayQueryReqData) throws Exception {
+
+        //--------------------------------------------------------------------
+        //发送HTTPS的Post请求到API地址
+        //--------------------------------------------------------------------
+        String responseString = sendPost(scanPayQueryReqData);
+
+        return responseString;
+    }
+
+
+}
+
+
+
+*******************************************************************************
+
+
+package com.sekorm.core.util.wx.service;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.sekorm.core.util.wx.request.ScanPayReqData;
+import com.sekorm.core.util.wx.util.Configure;
+import com.sekorm.core.util.wx.util.RandomStringGenerator;
+import com.sekorm.core.util.wx.util.Signature;
+
+public class ScanPayService extends BaseService{
+
+    public ScanPayService() throws Exception {
+        super(Configure.PAY_API);
+    }
+    
+    public ScanPayService(String app) throws Exception {
+        super(Configure.PAY_API,app);
+    }
+
+    /**
+     * 请求支付查询服务
+     * @param scanPayReqData 这个数据对象里面包含了API要求提交的各种数据字段
+     * @return API返回的XML数据
+     * @throws Exception
+     */
+    public String request(ScanPayReqData scanPayReqData) throws Exception {
+
+        //--------------------------------------------------------------------
+        //发送HTTPS的Post请求到API地址
+        //--------------------------------------------------------------------
+        String responseString = sendPost(scanPayReqData);
+
+        return responseString;
+    }
+    
+    
+    /**
+     * 请求支付查询服务
+     * @param scanPayReqData 这个数据对象里面包含了API要求提交的各种数据字段
+     * @return API返回的XML数据
+     * @throws Exception
+     */
+    public String request(ScanPayReqData scanPayReqData,String app) throws Exception {
+
+        //--------------------------------------------------------------------
+        //发送HTTPS的Post请求到API地址
+        //--------------------------------------------------------------------
+        String responseString = sendPost(scanPayReqData,app);
+
+        return responseString;
+    }
+    
+    
+
+    public static void main(String[] args) {
+    	ScanPayReqData data = new ScanPayReqData();
+    	data.setBody("微信支付测试");
+    	data.setOut_trade_no("w1704171234512");
+    	data.setTotal_fee(1);
+    	data.setSpbill_create_ip("172.16.33.48");
+    	data.setNotify_url("https://172.16.33.48/notify");
+    	data.setTrade_type("NATIVE");
+    	data.setSign(Signature.getSign(data.toMap()));
+    	System.out.println(data.toMap());
+    	
+    	try {
+    		ScanPayService service = new ScanPayService();
+//    		TestData data = new TestData();
+//    		data.setSign(Signature.getSign(data.toMap()));
+			String rs = service.request(data);
+			System.out.println(rs);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	//https://api.mch.weixin.qq.com/sandboxnew/pay/getsignkey
+//    	Util.getObjectFromXML(payServiceResponseString, ScanPayResData.class);
+	}
+
+}
+
+class TestData {
+	private String mch_id = "1288120701";
+	private String nonce_str = RandomStringGenerator.getRandomStringByLength(32);
+	private String sign = "";
+	public String getMch_id() {
+		return mch_id;
+	}
+	public void setMch_id(String mch_id) {
+		this.mch_id = mch_id;
+	}
+	public String getNonce_str() {
+		return nonce_str;
+	}
+	public void setNonce_str(String nonce_str) {
+		this.nonce_str = nonce_str;
+	}
+	public String getSign() {
+		return sign;
+	}
+	public void setSign(String sign) {
+		this.sign = sign;
+	}
+	public Map<String,Object> toMap(){
+		Map<String,Object> map = new HashMap<String, Object>();
+		Field[] fields = this.getClass().getDeclaredFields();
+		for (Field field : fields) {
+			Object obj;
+			try {
+				obj = field.get(this);
+				if(obj!=null){
+					map.put(field.getName(), obj);
+				}
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return map;
+	}
+}
+
+
+
+
+
+
+
+
+```
+
+
+
+##### util
+
+
+```
+
+package com.sekorm.core.util.wx.util;
+
+
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 14:40
+ * 这里放置各种配置数据
+ */
+public class Configure {
+
+	//sdk的版本号
+	public static   String sdkVersion ;
+
+	//这个就是自己要保管好的私有Key了（切记只能放在自己的后台代码里，不能放在任何可能被看到源代码的客户端程序中）
+	//每次自己Post数据给API的时候都要用这个key来对所有字段进行签名，生成的签名会放在Sign这个字段，API收到Post数据的时候也会用同样的签名算法对Post过来的数据进行签名和验证
+	//收到API的返回的时候也要用这个key来对返回的数据算下签名，跟API的Sign数据进行比较，如果值不一致，有可能数据被第三方给篡改
+
+	public static String key ;
+
+	//微信分配的公众号ID（开通公众号之后可以获取到）wx45ee03a47e7019d0
+	public static String appID  ;
+
+	//微信支付分配的商户号ID（开通公众号的微信支付功能之后可以获取到）
+	public static String mchID  ;
+
+	//受理模式下给子商户分配的子商户号
+	public static String subMchID  ;
+
+	//HTTPS证书的本地路径
+	public static String certLocalPath  ;
+
+	//HTTPS证书密码，默认密码等于商户号MCHID
+	public static String certPassword  ;
+
+	//是否使用异步线程的方式来上报API测速，默认为异步模式
+	public static boolean useThreadToDoReport  ;
+
+	//机器IP
+	public static String ip  ;
+	
+	public static String notify_url  ;
+	
+	public static String trade_type  ;
+	
+	
+
+	//以下是几个API的路径：(https://api.mch.weixin.qq.com/sandboxnew/pay/getsignkey)
+	//1）扫码支付API（统一下单）
+	public static String PAY_API  ;
+
+	//2）扫码支付查询API
+	public static String PAY_QUERY_API  ;
+
+	//3）关闭订单API
+	public static String PAY_CLOSE_API ;
+
+	//4）下载对账单API
+	public static String DOWNLOAD_BILL_API  ;
+
+	//5) 统计上报API
+	public static String REPORT_API  ;
+
+	
+	//####################################
+	public static String trade_type_app  ;
+	public static String appID_app;
+	public static String mchID_app  ;
+	public static String key_app ;
+	//HTTPS证书的本地路径
+	public static String certLocalPath_app  ;
+    //HTTPS证书密码，默认密码等于商户号MCHID
+	public static String certPassword_app  ;
+	
+	public static String getSdkVersion() {
+		return sdkVersion;
+	}
+
+	public static void setSdkVersion(String sdkVersion) {
+		Configure.sdkVersion = sdkVersion;
+	}
+
+	public static String getKey() {
+		return key;
+	}
+
+	public static void setKey(String key) {
+		Configure.key = key;
+	}
+
+	public static String getAppID() {
+		return appID;
+	}
+
+	public static void setAppID(String appID) {
+		Configure.appID = appID;
+	}
+
+	public static String getMchID() {
+		return mchID;
+	}
+
+	public static void setMchID(String mchID) {
+		Configure.mchID = mchID;
+	}
+
+	public static String getSubMchID() {
+		return subMchID;
+	}
+
+	public static void setSubMchID(String subMchID) {
+		Configure.subMchID = subMchID;
+	}
+
+	public static String getCertLocalPath() {
+		return certLocalPath;
+	}
+
+	public static void setCertLocalPath(String certLocalPath) {
+		Configure.certLocalPath = certLocalPath;
+	}
+
+	public static String getCertPassword() {
+		return certPassword;
+	}
+
+	public static void setCertPassword(String certPassword) {
+		Configure.certPassword = certPassword;
+	}
+
+	public static boolean isUseThreadToDoReport() {
+		return useThreadToDoReport;
+	}
+
+	public static void setUseThreadToDoReport(boolean useThreadToDoReport) {
+		Configure.useThreadToDoReport = useThreadToDoReport;
+	}
+
+	public static String getIp() {
+		return ip;
+	}
+
+	public static void setIp(String ip) {
+		Configure.ip = ip;
+	}
+
+	public static String getPAY_API() {
+		return PAY_API;
+	}
+
+	public static void setPAY_API(String pAY_API) {
+		PAY_API = pAY_API;
+	}
+
+	public static String getPAY_QUERY_API() {
+		return PAY_QUERY_API;
+	}
+
+	public static void setPAY_QUERY_API(String pAY_QUERY_API) {
+		PAY_QUERY_API = pAY_QUERY_API;
+	}
+
+	public static String getPAY_CLOSE_API() {
+		return PAY_CLOSE_API;
+	}
+
+	public static void setPAY_CLOSE_API(String pAY_CLOSE_API) {
+		PAY_CLOSE_API = pAY_CLOSE_API;
+	}
+
+	public static String getDOWNLOAD_BILL_API() {
+		return DOWNLOAD_BILL_API;
+	}
+
+	public static void setDOWNLOAD_BILL_API(String dOWNLOAD_BILL_API) {
+		DOWNLOAD_BILL_API = dOWNLOAD_BILL_API;
+	}
+
+	public static String getREPORT_API() {
+		return REPORT_API;
+	}
+
+	public static void setREPORT_API(String rEPORT_API) {
+		REPORT_API = rEPORT_API;
+	}
+
+	public static String getNotify_url() {
+		return notify_url;
+	}
+
+	public static void setNotify_url(String notify_url) {
+		Configure.notify_url = notify_url;
+	}
+
+	public static String getTrade_type() {
+		return trade_type;
+	}
+
+	public static void setTrade_type(String trade_type) {
+		Configure.trade_type = trade_type;
+	}
+
+	public static String getTrade_type_app() {
+		return trade_type_app;
+	}
+
+	public static void setTrade_type_app(String trade_type_app) {
+		Configure.trade_type_app = trade_type_app;
+	}
+
+	public static String getAppID_app() {
+		return appID_app;
+	}
+
+	public static void setAppID_app(String appID_app) {
+		Configure.appID_app = appID_app;
+	}
+
+	public static String getMchID_app() {
+		return mchID_app;
+	}
+
+	public static void setMchID_app(String mchID_app) {
+		Configure.mchID_app = mchID_app;
+	}
+
+	public static String getKey_app() {
+		return key_app;
+	}
+
+	public static void setKey_app(String key_app) {
+		Configure.key_app = key_app;
+	}
+
+	public static String getCertLocalPath_app() {
+		return certLocalPath_app;
+	}
+
+	public static void setCertLocalPath_app(String certLocalPath_app) {
+		Configure.certLocalPath_app = certLocalPath_app;
+	}
+
+	public static String getCertPassword_app() {
+		return certPassword_app;
+	}
+
+	public static void setCertPassword_app(String certPassword_app) {
+		Configure.certPassword_app = certPassword_app;
+	}
+
+	
+}
+
+
+
+*****************************************************************************
+
+package com.sekorm.core.util.wx.util;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 14:36
+ */
+public class HttpsRequest {
+
+    public interface ResultListener {
+
+        public void onConnectionPoolTimeoutError();
+    }
+
+    private static Log log = new Log(LoggerFactory.getLogger(HttpsRequest.class));
+
+    //表示请求器是否已经做了初始化工作
+    private boolean hasInit = false;
+
+    //连接超时时间，默认10秒
+    private int socketTimeout = 10000;
+
+    //传输超时时间，默认30秒
+    private int connectTimeout = 30000;
+
+    //请求器的配置
+    private RequestConfig requestConfig;
+
+    //HTTP请求器
+    private CloseableHttpClient httpClient;
+
+    public HttpsRequest() throws Exception {
+        init();
+    }
+
+    private void init() throws Exception {
+
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        FileInputStream instream = new FileInputStream(new File(Configure.getCertLocalPath()));//加载本地的证书进行https加密传输
+        try {
+            keyStore.load(instream, Configure.getCertPassword().toCharArray());//设置证书密码
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } finally {
+            instream.close();
+        }
+
+        // Trust own CA and all self-signed certs
+        SSLContext sslcontext = SSLContexts.custom()
+                .loadKeyMaterial(keyStore, Configure.getCertPassword().toCharArray())
+                .build();
+        // Allow TLSv1 protocol only
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                sslcontext,
+                new String[]{"TLSv1"},
+                null,
+                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+
+        httpClient = HttpClients.custom()
+                .setSSLSocketFactory(sslsf)
+                .build();
+
+        //根据默认超时限制初始化requestConfig
+        requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+
+        hasInit = true;
+    }
+
+    /**
+     * 通过Https往API post xml数据
+     *
+     * @param url    API地址
+     * @param xmlObj 要提交的XML数据对象
+     * @return API回包的实际数据
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     */
+
+    public String sendPost(String url, Object xmlObj) throws Exception {
+
+        if (!hasInit) {
+            init();
+        }
+
+        String result = null;
+
+        HttpPost httpPost = new HttpPost(url);
+
+        //解决XStream对出现双下划线的bug
+        XStream xStreamForRequestPostData = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("-_", "_")));
+
+        //将要提交给API的数据对象转换成XML格式数据Post给API
+        String postDataXML = xStreamForRequestPostData.toXML(xmlObj);
+
+        Util.log("API，POST过去的数据是：");
+        Util.log(postDataXML);
+
+        //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
+        StringEntity postEntity = new StringEntity(postDataXML, "UTF-8");
+        httpPost.addHeader("Content-Type", "text/xml");
+        httpPost.setEntity(postEntity);
+
+        //设置请求器的配置
+        httpPost.setConfig(requestConfig);
+
+        Util.log("executing request" + httpPost.getRequestLine());
+
+        try {
+            HttpResponse response = httpClient.execute(httpPost);
+
+            HttpEntity entity = response.getEntity();
+
+            result = EntityUtils.toString(entity, "UTF-8");
+
+        } catch (ConnectionPoolTimeoutException e) {
+            log.e("http get throw ConnectionPoolTimeoutException(wait time out)");
+
+        } catch (ConnectTimeoutException e) {
+            log.e("http get throw ConnectTimeoutException");
+
+        } catch (SocketTimeoutException e) {
+            log.e("http get throw SocketTimeoutException");
+
+        } catch (Exception e) {
+            log.e("http get throw Exception");
+
+        } finally {
+            httpPost.abort();
+        }
+
+        return result;
+    }
+
+    /**
+     * 设置连接超时时间
+     *
+     * @param socketTimeout 连接时长，默认10秒
+     */
+    public void setSocketTimeout(int socketTimeout) {
+    	this.socketTimeout = socketTimeout;
+        resetRequestConfig();
+    }
+
+    /**
+     * 设置传输超时时间
+     *
+     * @param connectTimeout 传输时长，默认30秒
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+        resetRequestConfig();
+    }
+
+    private void resetRequestConfig(){
+        requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+    }
+
+    /**
+     * 允许商户自己做更高级更复杂的请求器配置
+     *
+     * @param requestConfig 设置HttpsRequest的请求器配置
+     */
+    public void setRequestConfig(RequestConfig requestConfig) {
+    	this.requestConfig = requestConfig;
+    }
+}
+
+
+
+**********************************************************************
+
+
+package com.sekorm.core.util.wx.util;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 14:36
+ */
+public class HttpsRequestApp {
+
+    public interface ResultListener {
+
+        public void onConnectionPoolTimeoutError();
+    }
+
+    private static Log log = new Log(LoggerFactory.getLogger(HttpsRequestApp.class));
+
+    //表示请求器是否已经做了初始化工作
+    private boolean hasInit = false;
+
+    //连接超时时间，默认10秒
+    private int socketTimeout = 10000;
+
+    //传输超时时间，默认30秒
+    private int connectTimeout = 30000;
+
+    //请求器的配置
+    private RequestConfig requestConfig;
+
+    //HTTP请求器
+    private CloseableHttpClient httpClient;
+
+    public HttpsRequestApp() throws Exception {
+        init();
+    }
+
+    private void init() throws Exception {
+
+//        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+//        FileInputStream instream = new FileInputStream(new File(Configure.certLocalPath_app));//加载本地的证书进行https加密传输
+//        try {
+//            keyStore.load(instream, Configure.certPassword_app.toCharArray());//设置证书密码
+//        } catch (CertificateException e) {
+//            e.printStackTrace();
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        } finally {
+//            instream.close();
+//        }
+//
+//        // Trust own CA and all self-signed certs
+//        SSLContext sslcontext = SSLContexts.custom()
+//                .loadKeyMaterial(keyStore, Configure.certPassword_app.toCharArray())
+//                .build();
+//        // Allow TLSv1 protocol only
+//        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+//                sslcontext,
+//                new String[]{"TLSv1"},
+//                null,
+//                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+
+//        httpClient = HttpClients.custom()
+//                .setSSLSocketFactory(sslsf)
+//                .build();
+        
+        httpClient = HttpClients.createDefault();
+                
+
+        //根据默认超时限制初始化requestConfig
+        requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+
+        hasInit = true;
+    }
+
+    /**
+     * 通过Https往API post xml数据
+     *
+     * @param url    API地址
+     * @param xmlObj 要提交的XML数据对象
+     * @return API回包的实际数据
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws UnrecoverableKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyManagementException
+     */
+
+    public String sendPost(String url, Object xmlObj) throws Exception {
+
+        if (!hasInit) {
+            init();
+        }
+
+        String result = null;
+
+        HttpPost httpPost = new HttpPost(url);
+
+        //解决XStream对出现双下划线的bug
+        XStream xStreamForRequestPostData = new XStream(new DomDriver("UTF-8", new XmlFriendlyNameCoder("-_", "_")));
+
+        //将要提交给API的数据对象转换成XML格式数据Post给API
+        String postDataXML = xStreamForRequestPostData.toXML(xmlObj);
+
+//        Util.log("API，POST过去的数据是：");
+//        Util.log(postDataXML);
+
+        //得指明使用UTF-8编码，否则到API服务器XML的中文不能被成功识别
+        StringEntity postEntity = new StringEntity(postDataXML, "UTF-8");
+        httpPost.addHeader("Content-Type", "text/xml");
+        httpPost.setEntity(postEntity);
+
+        //设置请求器的配置
+        httpPost.setConfig(requestConfig);
+
+//        Util.log("executing request" + httpPost.getRequestLine());
+
+        try {
+            HttpResponse response = httpClient.execute(httpPost);
+
+            HttpEntity entity = response.getEntity();
+
+            result = EntityUtils.toString(entity, "UTF-8");
+
+        } catch (ConnectionPoolTimeoutException e) {
+            log.e("http get throw ConnectionPoolTimeoutException(wait time out)");
+
+        } catch (ConnectTimeoutException e) {
+            log.e("http get throw ConnectTimeoutException");
+
+        } catch (SocketTimeoutException e) {
+            log.e("http get throw SocketTimeoutException");
+
+        } catch (Exception e) {
+            log.e("http get throw Exception");
+
+        } finally {
+            httpPost.abort();
+        }
+
+        return result;
+    }
+
+    /**
+     * 设置连接超时时间
+     *
+     * @param socketTimeout 连接时长，默认10秒
+     */
+    public void setSocketTimeout(int socketTimeout) {
+    	this.socketTimeout = socketTimeout;
+        resetRequestConfig();
+    }
+
+    /**
+     * 设置传输超时时间
+     *
+     * @param connectTimeout 传输时长，默认30秒
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+        resetRequestConfig();
+    }
+
+    private void resetRequestConfig(){
+        requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectTimeout).build();
+    }
+
+    /**
+     * 允许商户自己做更高级更复杂的请求器配置
+     *
+     * @param requestConfig 设置HttpsRequest的请求器配置
+     */
+    public void setRequestConfig(RequestConfig requestConfig) {
+    	this.requestConfig = requestConfig;
+    }
+}
+
+
+
+
+*************************************************************************
+
+package com.sekorm.core.util.wx.util;
+
+import org.slf4j.Logger;
+
+/**
+ * User: rizenguo
+ * Date: 2014/11/12
+ * Time: 14:32
+ */
+public class Log {
+
+    public static final String LOG_TYPE_TRACE = "logTypeTrace";
+    public static final String LOG_TYPE_DEBUG = "logTypeDebug";
+    public static final String LOG_TYPE_INFO = "logTypeInfo";
+    public static final String LOG_TYPE_WARN = "logTypeWarn";
+    public static final String LOG_TYPE_ERROR = "logTypeError";
+
+    //打印日志
+    private Logger logger;
+
+    public Log(Logger log){
+        logger = log;
+    }
+
+    public void t(String s){
+        logger.trace(s);
+    }
+
+    public void d(String s){
+        logger.debug(s);
+    }
+
+    public void i(String s){
+        logger.info(s);
+    }
+
+    public void w(String s){
+        logger.warn(s);
+    }
+
+    public void e(String s){
+        logger.error(s);
+    }
+
+    public void log(String type,String s){
+        if(type.equals(Log.LOG_TYPE_TRACE)){
+            t(s);
+        }else if(type.equals(Log.LOG_TYPE_DEBUG)){
+            d(s);
+        }else if(type.equals(Log.LOG_TYPE_INFO)){
+            i(s);
+        }else if(type.equals(Log.LOG_TYPE_WARN)){
+            w(s);
+        }else if(type.equals(Log.LOG_TYPE_ERROR)){
+            e(s);
+        }
+    }
+
+}
+
+
+
+*************************************************************************
+
+
+package com.sekorm.core.util.wx.util;
+
+import java.security.MessageDigest;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/23
+ * Time: 15:43
+ */
+public class MD5 {
+    private final static String[] hexDigits = {"0", "1", "2", "3", "4", "5", "6", "7",
+            "8", "9", "a", "b", "c", "d", "e", "f"};
+
+    /**
+     * 转换字节数组为16进制字串
+     * @param b 字节数组
+     * @return 16进制字串
+     */
+    public static String byteArrayToHexString(byte[] b) {
+        StringBuilder resultSb = new StringBuilder();
+        for (byte aB : b) {
+            resultSb.append(byteToHexString(aB));
+        }
+        return resultSb.toString();
+    }
+
+    /**
+     * 转换byte到16进制
+     * @param b 要转换的byte
+     * @return 16进制格式
+     */
+    private static String byteToHexString(byte b) {
+        int n = b;
+        if (n < 0) {
+            n = 256 + n;
+        }
+        int d1 = n / 16;
+        int d2 = n % 16;
+        return hexDigits[d1] + hexDigits[d2];
+    }
+
+    /**
+     * MD5编码
+     * @param origin 原始字符串
+     * @return 经过MD5加密之后的结果
+     */
+    public static String MD5Encode(String origin) {
+        String resultString = null;
+        try {
+            resultString = origin;
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(resultString.getBytes("UTF-8"));
+            resultString = byteArrayToHexString(md.digest());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resultString;
+    }
+
+}
+
+
+
+
+*********************************************************************
+
+
+package com.sekorm.core.util.wx.util;
+
+import java.util.Random;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 14:18
+ */
+public class RandomStringGenerator {
+
+    /**
+     * 获取一定长度的随机字符串
+     * @param length 指定字符串长度
+     * @return 一定长度的字符串
+     */
+    public static String getRandomStringByLength(int length) {
+        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
+    }
+
+}
+
+
+
+
+************************************************************************
+
+
+
+package com.sekorm.core.util.wx.util;
+
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/29
+ * Time: 15:23
+ */
+public class Signature {
+    /**
+     * 签名算法
+     * @param o 要参与签名的数据对象
+     * @return 签名
+     * @throws IllegalAccessException
+     */
+    public static String getSign(Object o) throws IllegalAccessException {
+        ArrayList<String> list = new ArrayList<String>();
+        Class cls = o.getClass();
+        Field[] fields = cls.getDeclaredFields();
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.get(o) != null && f.get(o) != "") {
+                list.add(f.getName() + "=" + f.get(o) + "&");
+            }
+        }
+        int size = list.size();
+        String [] arrayToSort = list.toArray(new String[size]);
+        Arrays.sort(arrayToSort, String.CASE_INSENSITIVE_ORDER);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < size; i ++) {
+            sb.append(arrayToSort[i]);
+        }
+        String result = sb.toString();
+        result += "key=" + Configure.getKey();
+        Util.log("Sign Before MD5:" + result);
+        result = MD5.MD5Encode(result).toUpperCase();
+        Util.log("Sign Result:" + result);
+        return result;
+    }
+
+    public static String getSign(Map<String,Object> map){
+        ArrayList<String> list = new ArrayList<String>();
+        for(Map.Entry<String,Object> entry:map.entrySet()){
+            if(entry.getValue()!=""){
+                list.add(entry.getKey() + "=" + entry.getValue() + "&");
+            }
+        }
+        int size = list.size();
+        String [] arrayToSort = list.toArray(new String[size]);
+        Arrays.sort(arrayToSort, String.CASE_INSENSITIVE_ORDER);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < size; i ++) {
+            sb.append(arrayToSort[i]);
+        }
+        String result = sb.toString();
+        result += "key=" + Configure.getKey();
+        //Util.log("Sign Before MD5:" + result);
+        result = MD5.MD5Encode(result).toUpperCase();
+        //Util.log("Sign Result:" + result);
+        return result;
+    }
+    
+    
+    
+    public static String getSignApp(Object o) throws IllegalAccessException {
+        ArrayList<String> list = new ArrayList<String>();
+        Class cls = o.getClass();
+        Field[] fields = cls.getDeclaredFields();
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (f.get(o) != null && f.get(o) != "") {
+                list.add(f.getName() + "=" + f.get(o) + "&");
+            }
+        }
+        int size = list.size();
+        String [] arrayToSort = list.toArray(new String[size]);
+        Arrays.sort(arrayToSort, String.CASE_INSENSITIVE_ORDER);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < size; i ++) {
+            sb.append(arrayToSort[i]);
+        }
+        String result = sb.toString();
+        result += "key=" + Configure.key_app;
+        Util.log("Sign Before MD5:" + result);
+        result = MD5.MD5Encode(result).toUpperCase();
+        Util.log("Sign Result:" + result);
+        return result;
+    }
+    
+    
+    public static String getSignApp(Map<String,Object> map){
+        ArrayList<String> list = new ArrayList<String>();
+        for(Map.Entry<String,Object> entry:map.entrySet()){
+            if(entry.getValue()!=""){
+                list.add(entry.getKey() + "=" + entry.getValue() + "&");
+            }
+        }
+        int size = list.size();
+        String [] arrayToSort = list.toArray(new String[size]);
+        Arrays.sort(arrayToSort, String.CASE_INSENSITIVE_ORDER);
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < size; i ++) {
+            sb.append(arrayToSort[i]);
+        }
+        String result = sb.toString();
+        result += "key=" + Configure.key_app;
+        //Util.log("Sign Before MD5:" + result);
+        result = MD5.MD5Encode(result).toUpperCase();
+        //Util.log("Sign Result:" + result);
+        return result;
+    }
+    
+    
+
+    /**
+     * 从API返回的XML数据里面重新计算一次签名
+     * @param responseString API返回的XML数据
+     * @return 新鲜出炉的签名
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    public static String getSignFromResponseString(String responseString) throws IOException, SAXException, ParserConfigurationException {
+        Map<String,Object> map = XMLParser.getMapFromXML(responseString);
+        //清掉返回数据对象里面的Sign数据（不能把这个数据也加进去进行签名），然后用签名算法进行签名
+        map.put("sign","");
+        //将API返回的数据根据用签名算法进行计算新的签名，用来跟API返回的签名进行比较
+        return Signature.getSign(map);
+    }
+
+    /**
+     * 检验API返回的数据里面的签名是否合法，避免数据在传输的过程中被第三方篡改
+     * @param responseString API返回的XML数据字符串
+     * @return API签名是否合法
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
+    public static boolean checkIsSignValidFromResponseString(String responseString) throws ParserConfigurationException, IOException, SAXException {
+
+        Map<String,Object> map = XMLParser.getMapFromXML(responseString);
+        Util.log(map.toString());
+
+        String signFromAPIResponse = map.get("sign").toString();
+        if(signFromAPIResponse=="" || signFromAPIResponse == null){
+            Util.log("API返回的数据签名数据不存在，有可能被第三方篡改!!!");
+            return false;
+        }
+        Util.log("服务器回包里面的签名是:" + signFromAPIResponse);
+        //清掉返回数据对象里面的Sign数据（不能把这个数据也加进去进行签名），然后用签名算法进行签名
+        map.put("sign","");
+        //将API返回的数据根据用签名算法进行计算新的签名，用来跟API返回的签名进行比较
+        String signForAPIResponse = Signature.getSign(map);
+
+        if(!signForAPIResponse.equals(signFromAPIResponse)){
+            //签名验不过，表示这个API返回的数据有可能已经被篡改了
+            Util.log("API返回的数据签名验证不通过，有可能被第三方篡改!!!");
+            return false;
+        }
+        Util.log("恭喜，API返回的数据签名验证通过!!!");
+        return true;
+    }
+
+}
+
+
+
+
+****************************************************************************************
+
+
+package com.sekorm.core.util.wx.util;
+
+import com.thoughtworks.xstream.XStream;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.util.Map;
+
+/**
+ * User: rizenguo
+ * Date: 2014/10/23
+ * Time: 14:59
+ */
+public class Util {
+
+    //打log用
+    private static Log logger = new Log(LoggerFactory.getLogger(Util.class));
+
+    /**
+     * 通过反射的方式遍历对象的属性和属性值，方便调试
+     *
+     * @param o 要遍历的对象
+     * @throws Exception
+     */
+    public static void reflect(Object o) throws Exception {
+        Class cls = o.getClass();
+        Field[] fields = cls.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            Field f = fields[i];
+            f.setAccessible(true);
+            Util.log(f.getName() + " -> " + f.get(o));
+        }
+    }
+
+    public static byte[] readInput(InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        int len = 0;
+        byte[] buffer = new byte[1024];
+        while ((len = in.read(buffer)) > 0) {
+            out.write(buffer, 0, len);
+        }
+        out.close();
+        in.close();
+        return out.toByteArray();
+    }
+
+    public static String inputStreamToString(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int i;
+        while ((i = is.read()) != -1) {
+            baos.write(i);
+        }
+        return baos.toString();
+    }
+
+
+    public static InputStream getStringStream(String sInputString) throws UnsupportedEncodingException {
+        ByteArrayInputStream tInputStringStream = null;
+        if (sInputString != null && !sInputString.trim().equals("")) {
+            tInputStringStream = new ByteArrayInputStream(sInputString.getBytes("UTF-8"));
+        }
+        return tInputStringStream;
+    }
+
+    public static Object getObjectFromXML(String xml, Class tClass) {
+        //将从API返回的XML数据映射到Java对象
+        XStream xStreamForResponseData = new XStream();
+        xStreamForResponseData.alias("xml", tClass);
+        xStreamForResponseData.ignoreUnknownElements();//暂时忽略掉一些新增的字段
+        return xStreamForResponseData.fromXML(xml);
+    }
+
+    public static String getStringFromMap(Map<String, Object> map, String key, String defaultValue) {
+        if (key == "" || key == null) {
+            return defaultValue;
+        }
+        String result = (String) map.get(key);
+        if (result == null) {
+            return defaultValue;
+        } else {
+            return result;
+        }
+    }
+
+    public static int getIntFromMap(Map<String, Object> map, String key) {
+        if (key == "" || key == null) {
+            return 0;
+        }
+        if (map.get(key) == null) {
+            return 0;
+        }
+        return Integer.parseInt((String) map.get(key));
+    }
+
+    /**
+     * 打log接口
+     * @param log 要打印的log字符串
+     * @return 返回log
+     */
+    public static String log(Object log){
+        logger.i(log.toString());
+        //System.out.println(log);
+        return log.toString();
+    }
+
+    /**
+     * 读取本地的xml数据，一般用来自测用
+     * @param localPath 本地xml文件路径
+     * @return 读到的xml字符串
+     */
+    public static String getLocalXMLString(String localPath) throws IOException {
+        return Util.inputStreamToString(Util.class.getResourceAsStream(localPath));
+    }
+
+}
+
+
+
+
+************************************************************************************
+
+
+package com.sekorm.core.util.wx.util;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * User: rizenguo
+ * Date: 2014/11/1
+ * Time: 14:06
+ */
+public class XMLParser {
+
+    public static Map<String,Object> getMapFromXML(String xmlString) throws ParserConfigurationException, IOException, SAXException {
+
+        //这里用Dom的方式解析回包的最主要目的是防止API新增回包字段
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputStream is =  Util.getStringStream(xmlString);
+        Document document = builder.parse(is);
+
+        //获取到document里面的全部结点
+        NodeList allNodes = document.getFirstChild().getChildNodes();
+        Node node;
+        Map<String, Object> map = new HashMap<String, Object>();
+        int i=0;
+        while (i < allNodes.getLength()) {
+            node = allNodes.item(i);
+            if(node instanceof Element){
+                map.put(node.getNodeName(),node.getTextContent());
+            }
+            i++;
+        }
+        return map;
+
+    }
+
+
+}
+
+
+
+*********************************************************************************
+
+
+
+//package com.sekorm.core.util.wx.util;
+//
+//import com.google.zxing.BarcodeFormat;
+//import com.google.zxing.EncodeHintType;
+//import com.google.zxing.MultiFormatWriter;
+//import com.google.zxing.common.BitMatrix;
+//import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+//
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
+//
+//import javax.imageio.ImageIO;
+//
+//import java.awt.image.BufferedImage;
+//import java.io.IOException;
+//import java.io.OutputStream;
+//import java.util.Hashtable;
+//import java.util.Map;
+//
+///**
+// * Created by liuyangkly on 15/6/27.
+// * 使用了google zxing作为二维码生成工具
+// */
+//public class ZxingUtils {
+//	private static Log log = LogFactory.getLog(ZxingUtils.class);
+//
+//    private static final int BLACK = 0xFF000000;
+//    private static final int WHITE = 0xFFFFFFFF;
+//
+//    private static BufferedImage toBufferedImage(BitMatrix matrix) {
+//        int width = matrix.getWidth();
+//        int height = matrix.getHeight();
+//        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//        for (int x = 0; x < width; x++) {
+//            for (int y = 0; y < height; y++) {
+//                image.setRGB(x, y, matrix.get(x, y) ? BLACK : WHITE);
+//            }
+//        }
+//        return image;
+//    }
+//
+//    private static void writeToFile(BitMatrix matrix, String format, OutputStream file) throws IOException {
+//        BufferedImage image = toBufferedImage(matrix);
+//        if (!ImageIO.write(image, format, file)) {
+//            throw new IOException("Could not write an image of format " + format + " to " + file);
+//        }
+//    }
+//
+//    /** 将内容contents生成长宽均为width的图片，图片路径由imgPath指定
+//     */
+//    public static void setQRCodeImge(String contents, int width, OutputStream file) {
+//        setQRCodeImge(contents, width, width, file);
+//    }
+//
+//    /** 将内容contents生成长为width，宽为width的图片，图片路径由imgPath指定
+//     */
+//	public static void setQRCodeImge(String contents, int width, int height, OutputStream file) {
+//		try {
+//            Map<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();
+//            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+//            hints.put(EncodeHintType.CHARACTER_SET, "UTF8");
+//
+//			BitMatrix bitMatrix = new MultiFormatWriter().encode(contents, BarcodeFormat.QR_CODE, width, height, hints);
+//
+//			writeToFile(bitMatrix, "png", file);
+//		} catch (Exception e) {
+//			log.error("create QR code error!", e);
+//		}
+//	}
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
