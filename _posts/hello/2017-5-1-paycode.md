@@ -1283,354 +1283,7 @@ public class PayController extends MainController {
 ```
 
 
-#####  wxindex
 
-```
-
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>微信预支付订单请求前页面</title>
-</head>
-
-<style>
-    html,body {
-        width:100%;
-        min-width:1200px;
-        height:auto;
-        padding:0;
-        margin:0;
-        font-family:"微软雅黑";
-        background-color:#242736
-    }
-    .header {
-        width:100%;
-        margin:0 auto;
-        height:230px;
-        background-color:#fff
-    }
-    .container {
-        width:100%;
-        min-width:100px;
-        height:auto
-    }
-    .black {
-        background-color:#242736
-    }
-    .blue {
-        background-color:#0ae
-    }
-    .qrcode {
-        width:1200px;
-        margin:0 auto;
-        height:30px;
-        background-color:#242736
-    }
-    .littlecode {
-        width:16px;
-        height:16px;
-        margin-top:6px;
-        cursor:pointer;
-        float:right
-    }
-    .showqrs {
-        top:30px;
-        position:absolute;
-        width:100px;
-        margin-left:-65px;
-        height:160px;
-        display:none
-    }
-    .shtoparrow {
-        width:0;
-        height:0;
-        margin-left:65px;
-        border-left:8px solid transparent;
-        border-right:8px solid transparent;
-        border-bottom:8px solid #e7e8eb;
-        margin-bottom:0;
-        font-size:0;
-        line-height:0
-    }
-    .guanzhuqr {
-        text-align:center;
-        background-color:#e7e8eb;
-        border:1px solid #e7e8eb
-    }
-    .guanzhuqr img {
-        margin-top:10px;
-        width:80px
-    }
-    .shmsg {
-        margin-left:10px;
-        width:80px;
-        height:16px;
-        line-height:16px;
-        font-size:12px;
-        color:#242323;
-        text-align:center
-    }
-    .nav {
-        width:1200px;
-        margin:0 auto;
-        height:70px;
-    }
-    .open,.logo {
-        display:block;
-        float:left;
-        height:40px;
-        width:85px;
-        margin-top:20px
-    }
-    .divier {
-        display:block;
-        float:left;
-        margin-left:20px;
-        margin-right:20px;
-        margin-top:23px;
-        width:1px;
-        height:24px;
-        background-color:#d3d3d3
-    }
-    .open {
-        line-height:30px;
-        font-size:20px;
-        text-decoration:none;
-        color:#1a1a1a
-    }
-    .navbar {
-        float:right;
-        width:200px;
-        height:40px;
-        margin-top:15px;
-        list-style:none
-    }
-    .navbar li {
-        float:left;
-        width:100px;
-        height:40px
-    }
-    .navbar li a {
-        display:inline-block;
-        width:100px;
-        height:40px;
-        line-height:40px;
-        font-size:16px;
-        color:#1a1a1a;
-        text-decoration:none;
-        text-align:center
-    }
-    .navbar li a:hover {
-        color:#00AAEE
-    }
-    .title {
-        width:1200px;
-        margin:0 auto;
-        height:80px;
-        line-height:80px;
-        font-size:20px;
-        color:#FFF
-    }
-    .content {
-        width:100%;
-        min-width:1200px;
-        height:660px;
-        background-color:#fff;      
-    }
-    .alipayform {
-        width:800px;
-        margin:0 auto;
-        height:600px;
-        border:1px solid #0ae
-    }
-    .element {
-        width:600px;
-        height:80px;
-        margin-left:100px;
-        font-size:20px
-    }
-    .etitle,.einput {
-        float:left;
-        height:26px
-    }
-    .etitle {
-        width:150px;
-        line-height:26px;
-        text-align:right
-    }
-    .einput {
-        width:200px;
-        margin-left:20px
-    }
-    .einput input {
-        width:398px;
-        height:24px;
-        border:1px solid #0ae;
-        font-size:16px
-    }
-    .mark {
-        margin-top: 10px;
-        width:500px;
-        height:30px;
-        margin-left:80px;
-        line-height:30px;
-        font-size:12px;
-        color:#999
-    }
-    .legend {
-        margin-left:100px;
-        font-size:24px
-    }
-    .alisubmit {
-        width:400px;
-        height:40px;
-        border:0;
-        background-color:#0ae;
-        font-size:16px;
-        color:#FFF;
-        cursor:pointer;
-        margin-left:170px
-    }
-    .footer {
-        width:100%;
-        height:120px;
-        background-color:#242735
-    }
-    .footer-sub a,span {
-        color:#808080;
-        font-size:12px;
-        text-decoration:none
-    }
-    .footer-sub a:hover {
-        color:#00aeee
-    }
-    .footer-sub span {
-        margin:0 3px
-    }
-    .footer-sub {
-        padding-top:40px;
-        height:20px;
-        width:600px;
-        margin:0 auto;
-        text-align:center
-    }
-</style>
-<body>
-    <div class="header">
-        <div class="container black">
-            <div class="qrcode">
-                <div class="littlecode">
-                    <img width="16px" src="img/little_qrcode.jpg" id="licode">
-                    <div class="showqrs" id="showqrs">
-                        <div class="shtoparrow"></div>
-                        <div class="guanzhuqr">
-                            <div class="shmsg" style="margin-top:5px;">
-                            请扫码关注
-                            </div>
-                            <div class="shmsg" style="margin-bottom:5px;">
-                                接收重要信息
-                            </div>
-                        </div>
-                    </div>
-                </div>      
-            </div>
-        </div>
-        <div class="container">
-            <div class="nav">
-                <span class="divier"></span>
-            </div>
-        </div>
-        <div class="container blue">
-            <div class="title">微信扫码支付(web)</div>
-        </div>
-    </div>
-    <div class="content">
-        <form action="wxpayapi" class="alipayform" method="POST">
-            <div class="element" style="margin-top:60px;">
-                <div class="legend">填写请求微信预下单api的商品信息</div>
-            </div>
-            <div class="element">
-                <div class="etitle">商户订单号:</div>
-                <div class="einput"><input type="text" name="WIDout_trade_no" id="out_trade_no"></div>
-                <br>
-                <div class="mark">注意：商户订单号(out_trade_no).必填(建议是英文字母和数字,不能含有特殊字符)</div>
-            </div>
-            
-            <div class="element">
-                <div class="etitle">商品描述:</div>
-                <div class="einput"><input type="text" name="WIDbody" value="test商品123"></div>
-                <br>
-                <div class="mark">注意：商品描述(body)，必填(建议中文，英文，数字，不能含有特殊字符)</div>
-            </div>
-            <div class="element">
-                <div class="etitle">付款金额:</div>
-                <div class="einput"><input type="text" name="WIDtotal_fee" value="1"></div>
-                <br>
-                <div class="mark">注意：付款金额(total_fee)，必填(格式如：1, 以分为单位)</div>
-            </div>
-            <div class="element">
-                <input type="submit" class="alisubmit" value ="确认支付">
-            </div>
-        </form>
-    </div>
-    <div class="footer">
-        <p class="footer-sub">
-            <a href="http://ab.alipay.com/i/index.htm" target="_blank">关于支付宝</a><span>|</span>
-            <a href="https://e.alipay.com/index.htm" target="_blank">商家中心</a><span>|</span>
-            <a href="https://job.alibaba.com/zhaopin/index.htm" target="_blank">诚征英才</a><span>|</span>
-            <a href="http://ab.alipay.com/i/lianxi.htm" target="_blank">联系我们</a><span>|</span>
-            <a href="#" id="international" target="_blank">International&nbsp;Business</a><span>|</span>
-            <a href="http://ab.alipay.com/i/jieshao.htm#en" target="_blank">About Alipay</a>
-            <br>
-             <span>支付宝版权所有</span>
-            <span class="footer-date">2004-2016</span>
-            <span><a href="http://fun.alipay.com/certificate/jyxkz.htm" target="_blank">ICP证：沪B2-20150087</a></span>
-        </p>
-
-           
-    </div>
-</body>
-<script>
-
-        var even = document.getElementById("licode");   
-        var showqrs = document.getElementById("showqrs");
-         even.onmouseover = function(){
-            showqrs.style.display = "block"; 
-         }
-         even.onmouseleave = function(){
-            showqrs.style.display = "none";
-         }
-         
-         var out_trade_no = document.getElementById("out_trade_no");
-
-         //设定时间格式化函数
-         Date.prototype.format = function (format) {
-               var args = {
-                   "M+": this.getMonth() + 1,
-                   "d+": this.getDate(),
-                   "h+": this.getHours(),
-                   "m+": this.getMinutes(),
-                   "s+": this.getSeconds(),
-               };
-               if (/(y+)/.test(format))
-                   format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-               for (var i in args) {
-                   var n = args[i];
-                   if (new RegExp("(" + i + ")").test(format))
-                       format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? n : ("00" + n).substr(("" + n).length));
-               }
-               return format;
-           };
-           
-         out_trade_no.value = 'test'+ new Date().format("yyyyMMddhhmmss");
- 
-</script>
-
-</html>
-
-```
 
 
 #####  wxpay
@@ -1948,3 +1601,805 @@ public class PayController extends MainController {
 <!-- end -->
 
 ```
+
+
+#### 后台控制
+
+##### PayService
+
+```
+
+package com.sekorm.core.service.supply;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.xml.sax.SAXException;
+
+import com.alipay.api.AlipayApiException;
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.domain.AlipayTradeAppPayModel;
+import com.alipay.api.request.AlipayTradeAppPayRequest;
+import com.alipay.api.response.AlipayTradeAppPayResponse;
+import com.sekorm.common.exception.BusinessException;
+import com.sekorm.common.util.JacksonUtils;
+import com.sekorm.core.common.PayConstants;
+import com.sekorm.core.common.ShopConstants;
+import com.sekorm.core.dao.supply.OrderMapper;
+import com.sekorm.core.dao.supply.PaymentLogMapper;
+import com.sekorm.core.dao.supply.PaymentMapper;
+import com.sekorm.core.model.supply.Order;
+import com.sekorm.core.model.supply.Payment;
+import com.sekorm.core.model.supply.PaymentLog;
+import com.sekorm.core.util.ali.config.AlipayConfig;
+import com.sekorm.core.util.ali.util.AlipayNotify;
+import com.sekorm.core.util.ali.util.AlipaySubmit;
+import com.sekorm.core.util.wx.request.ScanPayReqData;
+import com.sekorm.core.util.wx.service.ScanPayService;
+import com.sekorm.core.util.wx.util.Configure;
+import com.sekorm.core.util.wx.util.Signature;
+import com.sekorm.core.util.wx.util.Util;
+import com.sekorm.dubbo.beans.isupply.PayAliDO;
+import com.sekorm.dubbo.beans.isupply.PayWxXmlDO;
+import com.sekorm.dubbo.beans.isupply.ScanPayResData;
+import com.sekorm.dubbo.beans.isupply.WxNotifyDI;
+
+/**
+ * @describe 支付Service
+ * @author bowen_bao
+ * @date 2017年5月8日
+ */
+@Service
+public class PayService {
+	
+	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	@Resource
+	private PaymentMapper paymentMapper;
+	@Resource
+	private PaymentLogMapper paymentLogMapper;
+	@Resource
+	private OrderMapper orderMapper;
+	
+	/**
+	 * 检查订单是否可以支付
+	 * @author worley_qu
+	 * @param dealAmount 客户端传来的订单总金额
+	 * @param orderCode  客户端传过来的订单号
+	 * @param memId      会员ID
+	 */
+	private void checkOrderPayment(String dealAmount, String orderCode, Integer memId) {
+		Order order = orderMapper.getByOrderCode(orderCode);
+		if(order == null || order.getMemId().compareTo(memId) != 0) {
+			log.error("用户去支付的订单号不存在, memId=" + memId + ", orderCode=" + orderCode);
+			throw new BusinessException("订单号不存在");
+		} else if(order.getOrderStatus().intValue() == ShopConstants.ORDER_CANCELED) {
+			log.error("该订单已取消，不允许支付， memId=" + memId + ", orderCode=" + orderCode);
+			throw new BusinessException("订单已取消");
+		} else if(order.getPayStatus().intValue() == ShopConstants.ORDER_PAID) {
+			log.error("该订单已完成支付，不能重复支付， memId=" + memId + ", orderCode=" + orderCode);
+			throw new BusinessException("订单已支付");
+		}
+		BigDecimal clientTotalAmount;//客户端传来的订单总金额
+		try {
+			clientTotalAmount = new BigDecimal(dealAmount);
+		} catch (Exception e) {
+			log.error("客户端传来的订单总金额错误， memId=" + memId + ", dealAmount=" + dealAmount);
+			throw new BusinessException("金额错误");
+		}
+		if(!order.getDealAmount().equals(clientTotalAmount)) {
+			log.error("客户端传来的订单总金额与服务器的不一致， memId=" + memId 
+					+ ", 客户端总金额=" + dealAmount
+					+ ", 服务端总金额=" + order.getDealAmount());
+			throw new BusinessException("金额错误");
+		}
+	}
+	
+	/**
+	 * 检查订单是否已经成功支付
+	 * @param orderCode
+	 * @return
+	 */
+	public boolean checkPayment(String orderCode) {
+		Payment payment = paymentMapper.selectByOrderCode(orderCode);
+		return payment != null && payment.getStatus() == ShopConstants.ORDER_PAID;
+	}
+	
+	/**
+	 * 构造跳转到支付宝的html页面
+	 * @param memId
+	 * @param orderCode
+	 * @param subject
+	 * @param dealAmount
+	 * @param body
+	 * @param ip
+	 * @return
+	 */
+	public String getAliHtml(Integer memId, String orderCode, String subject, 
+			String dealAmount, String body, String ip){
+		//检查是否可以付款
+		checkOrderPayment(dealAmount, orderCode, memId);
+		//封装支付参数
+		Map<String,String> sPara=new HashMap<String, String>();
+		sPara.put("out_trade_no", orderCode);//商户订单号，商户网站订单系统中唯一订单号，必填
+		sPara.put("subject", subject);//订单名称，必填
+		sPara.put("body", body);//商品描述，可空
+		sPara.put("total_fee", dealAmount);//订单付款金额，必填
+		sPara.put("_input_charset", AlipayConfig.input_charset);
+		sPara.put("exter_invoke_ip", ip);
+		sPara.put("partner", AlipayConfig.partner);
+		sPara.put("seller_id", AlipayConfig.seller_id);
+		sPara.put("notify_url", AlipayConfig.notify_url);
+		sPara.put("return_url", AlipayConfig.return_url);
+		sPara.put("service", AlipayConfig.service);
+		sPara.put("payment_type", AlipayConfig.payment_type);
+		
+		//构造跳转到支付宝的html页面
+		String sHtmlText = AlipaySubmit.buildRequest(sPara,"get","确认");
+		log.info("构造跳转到支付宝的html页面完成：memId=" + memId + ", orderCode" + orderCode);
+		return sHtmlText;
+	}
+	
+	/**
+	 * 获取授权以便能APP能调用ali SDK
+	 * @param out_trade_no
+	 * @param subject
+	 * @param total_fee
+	 * @param body
+	 * @param ip
+	 * @return
+	 */
+	public PayAliDO getAliPermissionForApp(String out_trade_no,String subject,float total_amount,String ip,String pay_channel){
+		
+		
+		if(checkPayment(out_trade_no)){
+			PayAliDO payAliDO=new PayAliDO();
+			payAliDO.setPayStatus(1);
+			return payAliDO;
+		}
+		
+		AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.alipay_gateway_new, 
+				AlipayConfig.app_id, AlipayConfig.private_key_APP_ALI, "json", AlipayConfig.input_charset, AlipayConfig.public_key_APP_ALI, AlipayConfig.sign_type_APP_ALI);
+		//实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
+		AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
+		//SDK已经封装掉了公共参数，这里只需要传入业务参数。以下方法为sdk的model入参方式(model和biz_content同时存在的情况下取biz_content)。
+		AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
+		model.setSubject(subject);
+		model.setOutTradeNo(out_trade_no);
+		model.setTimeoutExpress(AlipayConfig.timeoutExpress_APP);
+		model.setTotalAmount(String.valueOf(total_amount));
+		model.setProductCode(AlipayConfig.product_code);
+		request.setBizModel(model);
+		request.setNotifyUrl(AlipayConfig.notify_url);
+		try {
+	        //这里和普通的接口调用不同，使用的是sdkExecute
+	        AlipayTradeAppPayResponse response = alipayClient.sdkExecute(request);
+	        PayAliDO payAliDO=new PayAliDO();
+	        payAliDO.setOrderInfo(response.getBody());
+	        payAliDO.setPayStatus(0);
+	        return payAliDO;
+	    } catch (AlipayApiException e) {
+	        e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * 校验支付宝web支付后返回的url参数，即支付宝同步通知验证参数合法性
+	 * @param params
+	 * @return
+	 */
+	public boolean aliVerify(Map<String, String> params){
+		log.info("supplyCore payService aliVerify *****************************");
+		PaymentLog payLog=new PaymentLog();
+		payLog.setOrderCode(params.get("out_trade_no"));
+		payLog.setTradeNo(params.get("trade_no"));
+		payLog.setType(PayConstants.PAYMENTLOG_TYPE_WEB_ALI_VERIFY);
+		payLog.setContent(JacksonUtils.toJson(params));
+		paymentLogMapper.insertSelective(payLog);
+		return AlipayNotify.verify(params);
+	}
+	
+	
+	/**
+	 * ali 异步通知验证
+	 * @param params
+	 * @return
+	 */
+	public boolean alipayNotify(Map<String, String> params){
+		log.info("supplyCore payService AlipayNotify *****************************");
+		PaymentLog payLog=new PaymentLog();
+		payLog.setOrderCode(params.get("out_trade_no"));
+		payLog.setTradeNo(params.get("trade_no"));
+		payLog.setType(PayConstants.PAYMENTLOG_TYPE_WEB_ALI_NOTIFY);
+		payLog.setContent(JacksonUtils.toJson(params));
+		paymentLogMapper.insertSelective(payLog);
+		return AlipayNotify.verify(params);
+	}
+	
+	/**
+	 * 记录APP支付同步返回日志
+	 * @param payChannel 支付渠道
+	 * @param result     支付返回结果
+	 */
+	@SuppressWarnings("rawtypes")
+	public void saveAppPayReturnInfo(Integer payChannel, String result) {
+		//{code=10000, msg=Success, app_id=2017032006303823, auth_app_id=2017032006303823, charset=utf-8, 
+		log.info("APP支付同步返回记录日志:payChannel=" + payChannel + ", result=" + result);
+		if(payChannel == PayConstants.PAY_CHANNEL_APP_ALI) {
+			Map rs = JacksonUtils.toBean(result, Map.class);
+			rs = (Map) rs.get("alipay_trade_app_pay_response");
+			insertPaymentLog((String)rs.get("out_trade_no"), PayConstants.PAYMENTLOG_TYPE_ALI_APP_RETURN, 
+					(String)rs.get("trade_no"), payChannel, result);
+		} else { //微信没有订单号信息
+			insertPaymentLog(null, PayConstants.PAYMENTLOG_TYPE_WX_APP_RETURN, 
+					null, payChannel, result);
+		}
+	} 
+	
+	/**
+	 * 记录支付通信日志
+	 * @param orderCode
+	 * @param type
+	 * @param tradeNo
+	 * @param payChannel
+	 * @param content
+	 */
+	@Transactional
+	private void insertPaymentLog(String orderCode, Integer type, 
+			String tradeNo, Integer payChannel, String content) {
+		PaymentLog payLog = new PaymentLog();
+		payLog.setOrderCode(orderCode);
+		payLog.setTradeNo(tradeNo);
+		payLog.setPayChannel(payChannel);
+		payLog.setType(type); //通信类型（支付接口类型）
+		payLog.setContent(content); //具体通信内容
+		paymentLogMapper.insertPayLog(payLog);
+	}
+	/**
+	 * 异步通知，保存订单{ALI}
+	 * @param params
+	 * @return
+	 */
+	@Transactional
+	public boolean savePayStatus(Map<String, String> params){
+		log.info("supplyCore payService savePayStatus *****************************");
+		String orderCode = params.get("out_trade_no").trim(); //订单号
+		String tradeStatus = params.get("trade_status"); //支付宝支付成功失败标识码
+		Integer payChannel = Integer.parseInt(params.get("pay_channel"));
+		//TODO 校验seller_id app_id
+		
+		Order order = orderMapper.getByOrderCode(orderCode);
+		BigDecimal totalFee = new BigDecimal(params.get("total_fee"));
+		if(order == null) { //正常同步通知时不会查不到订单信息
+			log.error("支付宝异步通知out_trade_no=" + orderCode + ", 但是系统中不存在该订单");
+		} else {
+			int status = tradeStatus.equals("TRADE_SUCCESS") ? PayConstants.PAYMENT_STATUS_SUCCESS : PayConstants.PAYMENT_STATUS_ERROR;
+			Payment payment = paymentMapper.selectByOrderCode(orderCode);
+			if(payment == null) {
+				payment = new Payment();
+				payment.setMemId(order.getMemId());
+				payment.setPayAmount(totalFee); //支付总金额
+				payment.setOrderCode(orderCode);
+				payment.setPayType(PayConstants.PAYMENT_PAY_TYPE_AMOUNT);
+				payment.setTradeNo(params.get("trade_no"));
+				payment.setPayChannel(payChannel);
+				payment.setStatus(status);      //成功、失败状态值
+				payment.setRemark(tradeStatus); //成功、失败字符串
+				paymentMapper.insertPay(payment);//新增付款记录
+				if(status == ShopConstants.ORDER_PAID) {//成功，修改订单为已付款
+					orderMapper.orderPaymentOk(orderCode, payChannel);
+				}
+			} else if(payment.getStatus().intValue() != ShopConstants.ORDER_PAID
+					&& status == PayConstants.PAYMENT_STATUS_SUCCESS) {//以前没有成功，现在支付成功时
+				payment.setTradeNo(params.get("trade_no"));
+				payment.setPayChannel(payChannel);
+				payment.setPayAmount(totalFee);
+				payment.setStatus(status);
+				payment.setRemark(tradeStatus);
+				paymentMapper.updateByOrderCode(payment);//更新付款记录
+				//修改订单为已付款
+				orderMapper.orderPaymentOk(orderCode, payChannel);
+			}
+			if(!order.getDealAmount().equals(totalFee)) { //TODO 是否发生异常邮件
+				log.error("支付宝异步通知支付金额与系统不一致，out_trade_no=" + orderCode 
+						+ ", total_fee=" + params.get("total_fee") 
+						+ ", dealAmount=" + order.getDealAmount());
+			}
+		}
+		//记录通信日志
+		insertPaymentLog(orderCode, PayConstants.PAYMENTLOG_TYPE_ALI_NOTIFY_SAVE, 
+				params.get("trade_no"), payChannel, JacksonUtils.toJson(params));
+		return true;
+	}
+	
+	
+	/**
+	 * 异步通知，保存订单{WX}
+	 * @param params
+	 * @return
+	 */
+	@Transactional
+	public boolean savePayStatus(WxNotifyDI obj){
+		log.info("supplyCore payService savePayStatus *****************************");
+		String orderCode = obj.getOut_trade_no(); //订单号
+		String resultCode = obj.getResult_code(); //微信支付成功失败标识码
+		Integer payChannel = Integer.parseInt(obj.getPay_channel());
+		Order order = orderMapper.getByOrderCode(orderCode);
+		BigDecimal totalFee = new BigDecimal(obj.getTotal_fee());
+		if(order == null) { //正常同步通知时不会查不到订单信息
+			log.error("支付宝异步通知out_trade_no=" + orderCode + ", 但是系统中不存在该订单");
+		} else {
+			int status = resultCode.equals("SUCCESS") ? PayConstants.PAYMENT_STATUS_SUCCESS : PayConstants.PAYMENT_STATUS_ERROR;
+			Payment payment = paymentMapper.selectByOrderCode(orderCode);
+			if(payment == null) {
+				payment = new Payment();
+				payment.setMemId(order.getMemId());
+				payment.setPayAmount(totalFee); //支付总金额
+				payment.setOrderCode(orderCode);
+				payment.setPayType(PayConstants.PAYMENT_PAY_TYPE_AMOUNT);
+				payment.setTradeNo(obj.getTransaction_id());
+				payment.setPayChannel(payChannel);
+				payment.setStatus(status);      //成功、失败状态值
+				payment.setRemark(resultCode);  //成功、失败字符串
+				paymentMapper.insertPay(payment);//新增付款记录
+				if(status == ShopConstants.ORDER_PAID) {//成功，修改订单为已付款
+					orderMapper.orderPaymentOk(orderCode, payChannel);
+				}
+			} else if(payment.getStatus().intValue() != ShopConstants.ORDER_PAID
+					&& status == PayConstants.PAYMENT_STATUS_SUCCESS) {//以前没有成功，现在支付成功时
+				payment.setTradeNo(obj.getTransaction_id());
+				payment.setPayAmount(totalFee);
+				payment.setPayChannel(payChannel);
+				payment.setStatus(status);
+				payment.setRemark(resultCode);
+				paymentMapper.updateByOrderCode(payment);//更新付款记录
+				//修改订单为已付款
+				orderMapper.orderPaymentOk(orderCode, payChannel);
+			}
+			if(!order.getDealAmount().equals(totalFee)) { //TODO 是否发生异常邮件
+				log.error("微信异步通知支付金额与系统不一致，out_trade_no=" + orderCode 
+						+ ", total_fee=" + obj.getTotal_fee() 
+						+ ", dealAmount=" + order.getDealAmount());
+			}
+		}
+		//记录通信日志
+		insertPaymentLog(orderCode, PayConstants.PAYMENTLOG_TYPE_WEB_WX_NOTIFY_SAVE, 
+				obj.getTransaction_id(), payChannel, obj.getWxXml());
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @descripition 查询订单的状态是否为已支付
+	 * @param out_trade_no 订单号
+	 * @return
+	 */
+//	public boolean getpayStatus(String out_trade_no){
+//		return paymentService.checkPayment(out_trade_no);
+//	}
+	
+	/**
+	 * 微信WEB统一下单获取二维码URL
+	 * @param out_trade_no
+	 * @param body
+	 * @param total_fee
+	 * @param ip
+	 * @return
+	 */
+	public ScanPayResData getObjectFromXML(String out_trade_no, String body,
+			String total_fee,String ip){
+		log.info("get WX xml  **********************************************");
+		ScanPayReqData data = new ScanPayReqData();
+        data.setBody(body);
+    	data.setOut_trade_no(out_trade_no);
+    	data.setTotal_fee(Integer.parseInt(total_fee));
+    	data.setSpbill_create_ip(ip);
+    	data.setNotify_url(Configure.notify_url);
+    	data.setTrade_type(Configure.trade_type);
+    	data.setSign(Signature.getSign(data.toMap()));
+    	
+    	ScanPayService service;
+		try {
+			service = new ScanPayService();
+			String rs = service.request(data); //微信返回的xml数据
+			ScanPayResData resData = (ScanPayResData) Util.getObjectFromXML(rs, ScanPayResData.class);
+			resData.setRs(rs);
+			return resData;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	
+		return null;
+	}
+	
+	/**
+	 * 获取授权以便能APP能调用wx SDK
+	 * @param out_trade_no
+	 * @param subject
+	 * @param total_fee
+	 * @param body
+	 * @param ip
+	 * @return
+	 */
+	public PayWxXmlDO getWxPermissionForApp(String out_trade_no,String total_fee, String body,
+			String ip){
+		
+		if(checkPayment(out_trade_no)){
+			PayWxXmlDO xmlDO=new PayWxXmlDO();
+			xmlDO.setPayStatus(1);
+			return xmlDO;
+		}
+		
+		ScanPayReqData data = new ScanPayReqData();
+		data.setAppid(Configure.appID_app);
+		data.setMch_id(Configure.mchID_app);
+		data.setDevice_info("APP");
+        data.setBody(body);
+    	data.setOut_trade_no(out_trade_no);
+    	data.setTotal_fee(Integer.parseInt(total_fee));
+//    	data.setSpbill_create_ip(ip);//TODO
+    	
+    	data.setNotify_url(Configure.notify_url);
+    	data.setTrade_type(Configure.trade_type_app);
+    	data.setSign(Signature.getSignApp(data.toMap()));
+    	ScanPayService service;
+		try {
+			service = new ScanPayService("app");
+			String xmlStr=service.request(data,"app");
+			System.out.println("xml:"+xmlStr);
+			return convertPayWxXmlDO(xmlStr); //微信返回的xml数据;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	
+		return null;
+	}
+	
+	/**
+	 * 微信APP 统一下单返回的xml 转对象
+	 * @param xml
+	 * @return
+	 */
+	public PayWxXmlDO convertPayWxXmlDO(String xml){
+		PayWxXmlDO xmlDO=new PayWxXmlDO();
+		xmlDO.setKey(Configure.key_app);
+		xmlDO.setPayStatus(0);
+		SAXReader reader = new SAXReader();
+        try {
+        	 
+			InputStream is =new ByteArrayInputStream(xml.getBytes("UTF-8"));
+        	
+			Document document = reader.read(is);
+            
+            Element root=document.getRootElement(); 
+
+            List list = root.elements(); //得到database元素下的子元素集合
+
+           for(Object obj:list){
+
+           Element element = (Element)obj;
+
+           if(element.getName().equals("prepay_id")){
+        	   xmlDO.setPrepay_id(element.getText());
+           }else if(element.getName().equals("mch_id")){
+        	   xmlDO.setMch_id(element.getText());
+           }else if(element.getName().equals("result_code")){
+        	   xmlDO.setResult_code(element.getText());
+           }else if(element.getName().equals("return_msg")){
+        	   xmlDO.setReturn_msg(element.getText());
+           }
+           
+          } 
+            
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+        
+        
+		return xmlDO;
+	}
+	
+	  /**
+	   * web wx 下单获取二维码URL，校验参数
+	   * @param responseString
+	   * @return
+	   */
+	  public boolean checkIsSignValidFromResponseString(String responseString){
+		  try {
+			return Signature.checkIsSignValidFromResponseString(responseString);
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		  return false;
+	  }  
+	
+}
+
+
+```
+
+
+### util
+
+#### ali
+
+##### config
+
+```
+package com.sekorm.core.util.ali.config;
+
+
+/**
+ *类名：AlipayConfig
+ *功能：基础配置类
+ *详细：设置帐户有关信息及返回路径
+ *版本：3.4
+ *修改日期：2016-03-08
+ */
+public class AlipayConfig {
+	
+	public static  String partner;
+	
+	public static String seller_id;
+	
+	public static String private_key;
+	
+	public static   String alipay_public_key;
+	
+	public static   String notify_url;
+	
+	public static   String return_url;
+	
+	public static   String sign_type;
+	
+	public static   String input_charset;
+	
+	public static   String service;
+	
+	public static   String payment_type;
+	
+	public static   String anti_phishing_key;
+	
+	public static   String exter_invoke_ip;
+	
+	public static   String log_path;
+	
+	public static  String alipay_gateway_new;
+	
+	//app
+	public static String app_id;
+	public static String method;
+	public static String charset; 
+	public static String version; 
+	public static String product_code; 
+	public static String sign_type_APP_ALI;
+	public static String private_key_APP_ALI;
+	public static String public_key_APP_ALI;
+	public static String timeoutExpress_APP;
+	
+	public static String getTimeoutExpress_APP() {
+		return timeoutExpress_APP;
+	}
+
+	public static void setTimeoutExpress_APP(String timeoutExpress_APP) {
+		AlipayConfig.timeoutExpress_APP = timeoutExpress_APP;
+	}
+
+	public static String getPartner() {
+		return partner;
+	}
+
+	public static void setPartner(String partner) {
+		AlipayConfig.partner = partner;
+	}
+
+	public static String getSeller_id() {
+		return seller_id;
+	}
+
+	public static void setSeller_id(String seller_id) {
+		AlipayConfig.seller_id = seller_id;
+	}
+
+	public static String getPrivate_key() {
+		return private_key;
+	}
+
+	public static void setPrivate_key(String private_key) {
+		AlipayConfig.private_key = private_key;
+	}
+
+	public static String getAlipay_public_key() {
+		return alipay_public_key;
+	}
+
+	public static void setAlipay_public_key(String alipay_public_key) {
+		AlipayConfig.alipay_public_key = alipay_public_key;
+	}
+
+	public static String getNotify_url() {
+		return notify_url;
+	}
+
+	public static void setNotify_url(String notify_url) {
+		AlipayConfig.notify_url = notify_url;
+	}
+
+	public static String getReturn_url() {
+		return return_url;
+	}
+
+	public static void setReturn_url(String return_url) {
+		AlipayConfig.return_url = return_url;
+	}
+
+	public static String getSign_type() {
+		return sign_type;
+	}
+
+	public static void setSign_type(String sign_type) {
+		AlipayConfig.sign_type = sign_type;
+	}
+
+	public static String getInput_charset() {
+		return input_charset;
+	}
+
+	public static void setInput_charset(String input_charset) {
+		AlipayConfig.input_charset = input_charset;
+	}
+
+	public static String getService() {
+		return service;
+	}
+
+	public static void setService(String service) {
+		AlipayConfig.service = service;
+	}
+
+	public static String getPayment_type() {
+		return payment_type;
+	}
+
+	public static void setPayment_type(String payment_type) {
+		AlipayConfig.payment_type = payment_type;
+	}
+
+	public static String getAnti_phishing_key() {
+		return anti_phishing_key;
+	}
+
+	public static void setAnti_phishing_key(String anti_phishing_key) {
+		AlipayConfig.anti_phishing_key = anti_phishing_key;
+	}
+
+	public static String getExter_invoke_ip() {
+		return exter_invoke_ip;
+	}
+
+	public static void setExter_invoke_ip(String exter_invoke_ip) {
+		AlipayConfig.exter_invoke_ip = exter_invoke_ip;
+	}
+
+	public static String getLog_path() {
+		return log_path;
+	}
+
+	public static void setLog_path(String log_path) {
+		AlipayConfig.log_path = log_path;
+	}
+
+	public static String getApp_id() {
+		return app_id;
+	}
+
+	public static void setApp_id(String app_id) {
+		AlipayConfig.app_id = app_id;
+	}
+
+	public static String getMethod() {
+		return method;
+	}
+
+	public static void setMethod(String method) {
+		AlipayConfig.method = method;
+	}
+
+	public static String getCharset() {
+		return charset;
+	}
+
+	public static void setCharset(String charset) {
+		AlipayConfig.charset = charset;
+	}
+
+	public static String getVersion() {
+		return version;
+	}
+
+	public static void setVersion(String version) {
+		AlipayConfig.version = version;
+	}
+
+	public static String getProduct_code() {
+		return product_code;
+	}
+
+	public static void setProduct_code(String product_code) {
+		AlipayConfig.product_code = product_code;
+	}
+
+	public static String getSign_type_APP_ALI() {
+		return sign_type_APP_ALI;
+	}
+
+	public static void setSign_type_APP_ALI(String sign_type_APP_ALI) {
+		AlipayConfig.sign_type_APP_ALI = sign_type_APP_ALI;
+	}
+
+	public static String getPrivate_key_APP_ALI() {
+		return private_key_APP_ALI;
+	}
+
+	public static void setPrivate_key_APP_ALI(String private_key_APP_ALI) {
+		AlipayConfig.private_key_APP_ALI = private_key_APP_ALI;
+	}
+
+	public static String getPublic_key_APP_ALI() {
+		return public_key_APP_ALI;
+	}
+
+	public static void setPublic_key_APP_ALI(String public_key_APP_ALI) {
+		AlipayConfig.public_key_APP_ALI = public_key_APP_ALI;
+	}
+
+	public static String getAlipay_gateway_new() {
+		return alipay_gateway_new;
+	}
+
+	public static void setAlipay_gateway_new(String alipay_gateway_new) {
+		AlipayConfig.alipay_gateway_new = alipay_gateway_new;
+	}
+
+	
+	
+	
+	
+	
+	
+}
+
+
+
+```
+
+
+
+
