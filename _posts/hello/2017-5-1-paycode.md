@@ -2401,5 +2401,1530 @@ public class AlipayConfig {
 ```
 
 
+##### sign
+
+```
+
+
+
+/*
+ * Copyright (C) 2010 The MobileSecurePay Project
+ * All right reserved.
+ * author: shiqun.shi@alipay.com
+ */
+
+package com.sekorm.core.util.ali.sign;
+
+public final class Base64 {
+
+    static private final int     BASELENGTH           = 128;
+    static private final int     LOOKUPLENGTH         = 64;
+    static private final int     TWENTYFOURBITGROUP   = 24;
+    static private final int     EIGHTBIT             = 8;
+    static private final int     SIXTEENBIT           = 16;
+    static private final int     FOURBYTE             = 4;
+    static private final int     SIGN                 = -128;
+    static private final char    PAD                  = '=';
+    static private final boolean fDebug               = false;
+    static final private byte[]  base64Alphabet       = new byte[BASELENGTH];
+    static final private char[]  lookUpBase64Alphabet = new char[LOOKUPLENGTH];
+
+    static {
+        for (int i = 0; i < BASELENGTH; ++i) {
+            base64Alphabet[i] = -1;
+        }
+        for (int i = 'Z'; i >= 'A'; i--) {
+            base64Alphabet[i] = (byte) (i - 'A');
+        }
+        for (int i = 'z'; i >= 'a'; i--) {
+            base64Alphabet[i] = (byte) (i - 'a' + 26);
+        }
+
+        for (int i = '9'; i >= '0'; i--) {
+            base64Alphabet[i] = (byte) (i - '0' + 52);
+        }
+
+        base64Alphabet['+'] = 62;
+        base64Alphabet['/'] = 63;
+
+        for (int i = 0; i <= 25; i++) {
+            lookUpBase64Alphabet[i] = (char) ('A' + i);
+        }
+
+        for (int i = 26, j = 0; i <= 51; i++, j++) {
+            lookUpBase64Alphabet[i] = (char) ('a' + j);
+        }
+
+        for (int i = 52, j = 0; i <= 61; i++, j++) {
+            lookUpBase64Alphabet[i] = (char) ('0' + j);
+        }
+        lookUpBase64Alphabet[62] = (char) '+';
+        lookUpBase64Alphabet[63] = (char) '/';
+
+    }
+
+    private static boolean isWhiteSpace(char octect) {
+        return (octect == 0x20 || octect == 0xd || octect == 0xa || octect == 0x9);
+    }
+
+    private static boolean isPad(char octect) {
+        return (octect == PAD);
+    }
+
+    private static boolean isData(char octect) {
+        return (octect < BASELENGTH && base64Alphabet[octect] != -1);
+    }
+
+    /**
+     * Encodes hex octects into Base64
+     *
+     * @param binaryData Array containing binaryData
+     * @return Encoded Base64 array
+     */
+    public static String encode(byte[] binaryData) {
+
+        if (binaryData == null) {
+            return null;
+        }
+
+        int lengthDataBits = binaryData.length * EIGHTBIT;
+        if (lengthDataBits == 0) {
+            return "";
+        }
+
+        int fewerThan24bits = lengthDataBits % TWENTYFOURBITGROUP;
+        int numberTriplets = lengthDataBits / TWENTYFOURBITGROUP;
+        int numberQuartet = fewerThan24bits != 0 ? numberTriplets + 1 : numberTriplets;
+        char encodedData[] = null;
+
+        encodedData = new char[numberQuartet * 4];
+
+        byte k = 0, l = 0, b1 = 0, b2 = 0, b3 = 0;
+
+        int encodedIndex = 0;
+        int dataIndex = 0;
+        if (fDebug) {
+            System.out.println("number of triplets = " + numberTriplets);
+        }
+
+        for (int i = 0; i < numberTriplets; i++) {
+            b1 = binaryData[dataIndex++];
+            b2 = binaryData[dataIndex++];
+            b3 = binaryData[dataIndex++];
+
+            if (fDebug) {
+                System.out.println("b1= " + b1 + ", b2= " + b2 + ", b3= " + b3);
+            }
+
+            l = (byte) (b2 & 0x0f);
+            k = (byte) (b1 & 0x03);
+
+            byte val1 = ((b1 & SIGN) == 0) ? (byte) (b1 >> 2) : (byte) ((b1) >> 2 ^ 0xc0);
+            byte val2 = ((b2 & SIGN) == 0) ? (byte) (b2 >> 4) : (byte) ((b2) >> 4 ^ 0xf0);
+            byte val3 = ((b3 & SIGN) == 0) ? (byte) (b3 >> 6) : (byte) ((b3) >> 6 ^ 0xfc);
+
+            if (fDebug) {
+                System.out.println("val2 = " + val2);
+                System.out.println("k4   = " + (k << 4));
+                System.out.println("vak  = " + (val2 | (k << 4)));
+            }
+
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[val1];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[val2 | (k << 4)];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[(l << 2) | val3];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[b3 & 0x3f];
+        }
+
+        // form integral number of 6-bit groups
+        if (fewerThan24bits == EIGHTBIT) {
+            b1 = binaryData[dataIndex];
+            k = (byte) (b1 & 0x03);
+            if (fDebug) {
+                System.out.println("b1=" + b1);
+                System.out.println("b1<<2 = " + (b1 >> 2));
+            }
+            byte val1 = ((b1 & SIGN) == 0) ? (byte) (b1 >> 2) : (byte) ((b1) >> 2 ^ 0xc0);
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[val1];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[k << 4];
+            encodedData[encodedIndex++] = PAD;
+            encodedData[encodedIndex++] = PAD;
+        } else if (fewerThan24bits == SIXTEENBIT) {
+            b1 = binaryData[dataIndex];
+            b2 = binaryData[dataIndex + 1];
+            l = (byte) (b2 & 0x0f);
+            k = (byte) (b1 & 0x03);
+
+            byte val1 = ((b1 & SIGN) == 0) ? (byte) (b1 >> 2) : (byte) ((b1) >> 2 ^ 0xc0);
+            byte val2 = ((b2 & SIGN) == 0) ? (byte) (b2 >> 4) : (byte) ((b2) >> 4 ^ 0xf0);
+
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[val1];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[val2 | (k << 4)];
+            encodedData[encodedIndex++] = lookUpBase64Alphabet[l << 2];
+            encodedData[encodedIndex++] = PAD;
+        }
+
+        return new String(encodedData);
+    }
+
+    /**
+     * Decodes Base64 data into octects
+     *
+     * @param encoded string containing Base64 data
+     * @return Array containind decoded data.
+     */
+    public static byte[] decode(String encoded) {
+
+        if (encoded == null) {
+            return null;
+        }
+
+        char[] base64Data = encoded.toCharArray();
+        // remove white spaces
+        int len = removeWhiteSpace(base64Data);
+
+        if (len % FOURBYTE != 0) {
+            return null;//should be divisible by four
+        }
+
+        int numberQuadruple = (len / FOURBYTE);
+
+        if (numberQuadruple == 0) {
+            return new byte[0];
+        }
+
+        byte decodedData[] = null;
+        byte b1 = 0, b2 = 0, b3 = 0, b4 = 0;
+        char d1 = 0, d2 = 0, d3 = 0, d4 = 0;
+
+        int i = 0;
+        int encodedIndex = 0;
+        int dataIndex = 0;
+        decodedData = new byte[(numberQuadruple) * 3];
+
+        for (; i < numberQuadruple - 1; i++) {
+
+            if (!isData((d1 = base64Data[dataIndex++])) || !isData((d2 = base64Data[dataIndex++]))
+                || !isData((d3 = base64Data[dataIndex++]))
+                || !isData((d4 = base64Data[dataIndex++]))) {
+                return null;
+            }//if found "no data" just return null
+
+            b1 = base64Alphabet[d1];
+            b2 = base64Alphabet[d2];
+            b3 = base64Alphabet[d3];
+            b4 = base64Alphabet[d4];
+
+            decodedData[encodedIndex++] = (byte) (b1 << 2 | b2 >> 4);
+            decodedData[encodedIndex++] = (byte) (((b2 & 0xf) << 4) | ((b3 >> 2) & 0xf));
+            decodedData[encodedIndex++] = (byte) (b3 << 6 | b4);
+        }
+
+        if (!isData((d1 = base64Data[dataIndex++])) || !isData((d2 = base64Data[dataIndex++]))) {
+            return null;//if found "no data" just return null
+        }
+
+        b1 = base64Alphabet[d1];
+        b2 = base64Alphabet[d2];
+
+        d3 = base64Data[dataIndex++];
+        d4 = base64Data[dataIndex++];
+        if (!isData((d3)) || !isData((d4))) {//Check if they are PAD characters
+            if (isPad(d3) && isPad(d4)) {
+                if ((b2 & 0xf) != 0)//last 4 bits should be zero
+                {
+                    return null;
+                }
+                byte[] tmp = new byte[i * 3 + 1];
+                System.arraycopy(decodedData, 0, tmp, 0, i * 3);
+                tmp[encodedIndex] = (byte) (b1 << 2 | b2 >> 4);
+                return tmp;
+            } else if (!isPad(d3) && isPad(d4)) {
+                b3 = base64Alphabet[d3];
+                if ((b3 & 0x3) != 0)//last 2 bits should be zero
+                {
+                    return null;
+                }
+                byte[] tmp = new byte[i * 3 + 2];
+                System.arraycopy(decodedData, 0, tmp, 0, i * 3);
+                tmp[encodedIndex++] = (byte) (b1 << 2 | b2 >> 4);
+                tmp[encodedIndex] = (byte) (((b2 & 0xf) << 4) | ((b3 >> 2) & 0xf));
+                return tmp;
+            } else {
+                return null;
+            }
+        } else { //No PAD e.g 3cQl
+            b3 = base64Alphabet[d3];
+            b4 = base64Alphabet[d4];
+            decodedData[encodedIndex++] = (byte) (b1 << 2 | b2 >> 4);
+            decodedData[encodedIndex++] = (byte) (((b2 & 0xf) << 4) | ((b3 >> 2) & 0xf));
+            decodedData[encodedIndex++] = (byte) (b3 << 6 | b4);
+
+        }
+
+        return decodedData;
+    }
+
+    /**
+     * remove WhiteSpace from MIME containing encoded Base64 data.
+     *
+     * @param data  the byte array of base64 data (with WS)
+     * @return      the new length
+     */
+    private static int removeWhiteSpace(char[] data) {
+        if (data == null) {
+            return 0;
+        }
+
+        // count characters that's not whitespace
+        int newSize = 0;
+        int len = data.length;
+        for (int i = 0; i < len; i++) {
+            if (!isWhiteSpace(data[i])) {
+                data[newSize++] = data[i];
+            }
+        }
+        return newSize;
+    }
+}
+
+
+
+
+
+*******************************************************************************
+
+
+
+package com.sekorm.core.util.ali.sign;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+
+//import javax.crypto.Cipher;
+
+public class RSA {
+
+	private static final String SIGN_TYPE_RSA = "RSA";
+	public static final String SIGN_ALGORITHMS = "SHA1WithRSA";
+
+	private static final String SIGN_TYPE_RSA2 = "RSA2";
+	private static final String SIGN_SHA256RSA_ALGORITHMS = "SHA256WithRSA";
+
+	/**
+	 * RSA签名
+	 * 
+	 * @param content
+	 *            待签名数据
+	 * @param privateKey
+	 *            商户私钥
+	 * @param input_charset
+	 *            编码格式
+	 * @param signType
+	 *            签名类型      
+	 * @return 签名值
+	 */
+	public static String sign(String content, String privateKey, 
+			String input_charset, String signType) {
+		try {
+			PKCS8EncodedKeySpec priPKCS8 = new PKCS8EncodedKeySpec(
+					Base64.decode(privateKey));
+			KeyFactory keyf = KeyFactory.getInstance("RSA");
+			PrivateKey priKey = keyf.generatePrivate(priPKCS8);
+
+			java.security.Signature signature = null;
+			if (SIGN_TYPE_RSA.equals(signType)) {
+	            signature = java.security.Signature.getInstance(SIGN_ALGORITHMS);
+	        } else if (SIGN_TYPE_RSA2.equals(signType)) {
+	            signature = java.security.Signature.getInstance(SIGN_SHA256RSA_ALGORITHMS);
+	        } else {
+	            throw new Exception("不是支持的签名类型 : signType=" + signType);
+	        }
+
+			signature.initSign(priKey);
+			signature.update(content.getBytes(input_charset));
+
+			byte[] signed = signature.sign();
+
+			return Base64.encode(signed);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	/**
+	 * RSA验签名检查
+	 * 
+	 * @param content
+	 *            待签名数据
+	 * @param sign
+	 *            签名值
+	 * @param ali_public_key
+	 *            支付宝公钥
+	 * @param input_charset
+	 *            编码格式
+	 * @param signType
+	 *            签名类型
+	 * @return 布尔值
+	 */
+	public static boolean verify(String content, String sign, 
+			String ali_public_key, String input_charset, String signType) {
+		try {
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			byte[] encodedKey = Base64.decode(ali_public_key);
+			PublicKey pubKey = keyFactory
+					.generatePublic(new X509EncodedKeySpec(encodedKey));
+
+			java.security.Signature signature = null;
+			if (SIGN_TYPE_RSA.equals(signType)) {
+	            signature = java.security.Signature.getInstance(SIGN_ALGORITHMS);
+	        } else if (SIGN_TYPE_RSA2.equals(signType)) {
+	            signature = java.security.Signature.getInstance(SIGN_SHA256RSA_ALGORITHMS);
+	        } else {
+	            throw new Exception("不是支持的签名类型 : signType=" + signType);
+	        }
+
+			signature.initVerify(pubKey);
+			signature.update(content.getBytes(input_charset));
+
+			boolean bverify = signature.verify(Base64.decode(sign));
+			return bverify;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/**
+	 * 解密
+	 * 
+	 * @param content
+	 *            密文
+	 * @param private_key
+	 *            商户私钥
+	 * @param input_charset
+	 *            编码格式
+	 * @return 解密后的字符串
+	 */
+	public static String decrypt(String content, String private_key, String input_charset) throws Exception {
+		PrivateKey prikey = getPrivateKey(private_key);
+
+//		Cipher cipher = Cipher.getInstance("RSA");
+//		cipher.init(Cipher.DECRYPT_MODE, prikey);
+
+		InputStream ins = new ByteArrayInputStream(Base64.decode(content));
+		ByteArrayOutputStream writer = new ByteArrayOutputStream();
+		// rsa解密的字节大小最多是128，将需要解密的内容，按128位拆开解密
+		byte[] buf = new byte[128];
+		int bufl;
+
+		while ((bufl = ins.read(buf)) != -1) {
+			byte[] block = null;
+
+			if (buf.length == bufl) {
+				block = buf;
+			} else {
+				block = new byte[bufl];
+				for (int i = 0; i < bufl; i++) {
+					block[i] = buf[i];
+				}
+			}
+
+//			writer.write(cipher.doFinal(block));
+		}
+
+		return new String(writer.toByteArray(), input_charset);
+	}
+
+	/**
+	 * 得到私钥
+	 * 
+	 * @param key
+	 *            密钥字符串（经过base64编码）
+	 * @throws Exception
+	 */
+	public static PrivateKey getPrivateKey(String key) throws Exception {
+
+		byte[] keyBytes;
+
+		keyBytes = Base64.decode(key);
+
+		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+		PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+
+		return privateKey;
+	}
+	
+	public static void main(String[] args) {
+		String sign = sign("a=1", AlipayConfig.private_key_APP_ALI, "utf-8", "RSA2");
+		System.out.println(sign);
+		boolean rs = verify("a=1", sign, AlipayConfig.public_key_APP_ALI, "utf-8", "RSA2");
+		System.out.println(rs);
+	}
+	
+	
+	
+}
+
+
+
+```
+
+
+##### util
+
+```
+
+=====================================================================================
+
+###### httpClient
+
+************************************************************************************
+
+package com.sekorm.core.util.ali.util.httpClient;
+
+import org.apache.commons.httpclient.HttpException;
+import java.io.IOException;
+import java.net.UnknownHostException;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.util.IdleConnectionTimeoutThread;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.FilePartSource;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.params.HttpMethodParams;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+/* *
+ *类名：HttpProtocolHandler
+ *功能：HttpClient方式访问
+ *详细：获取远程HTTP数据
+ *版本：3.3
+ *日期：2012-08-17
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+
+public class HttpProtocolHandler {
+
+    private static String              DEFAULT_CHARSET                     = "UTF-8";
+
+    /** 连接超时时间，由bean factory设置，缺省为8秒钟 */
+    private int                        defaultConnectionTimeout            = 8000;
+
+    /** 回应超时时间, 由bean factory设置，缺省为30秒钟 */
+    private int                        defaultSoTimeout                    = 30000;
+
+    /** 闲置连接超时时间, 由bean factory设置，缺省为60秒钟 */
+    private int                        defaultIdleConnTimeout              = 60000;
+
+    private int                        defaultMaxConnPerHost               = 30;
+
+    private int                        defaultMaxTotalConn                 = 80;
+
+    /** 默认等待HttpConnectionManager返回连接超时（只有在达到最大连接数时起作用）：1秒*/
+    private static final long          defaultHttpConnectionManagerTimeout = 3 * 1000;
+
+    /**
+     * HTTP连接管理器，该连接管理器必须是线程安全的.
+     */
+    private HttpConnectionManager      connectionManager;
+
+    private static HttpProtocolHandler httpProtocolHandler                 = new HttpProtocolHandler();
+
+    /**
+     * 工厂方法
+     * 
+     * @return
+     */
+    public static HttpProtocolHandler getInstance() {
+        return httpProtocolHandler;
+    }
+
+    /**
+     * 私有的构造方法
+     */
+    private HttpProtocolHandler() {
+        // 创建一个线程安全的HTTP连接池
+        connectionManager = new MultiThreadedHttpConnectionManager();
+        connectionManager.getParams().setDefaultMaxConnectionsPerHost(defaultMaxConnPerHost);
+        connectionManager.getParams().setMaxTotalConnections(defaultMaxTotalConn);
+
+        IdleConnectionTimeoutThread ict = new IdleConnectionTimeoutThread();
+        ict.addConnectionManager(connectionManager);
+        ict.setConnectionTimeout(defaultIdleConnTimeout);
+
+        ict.start();
+    }
+
+    /**
+     * 执行Http请求
+     * 
+     * @param request 请求数据
+     * @param strParaFileName 文件类型的参数名
+     * @param strFilePath 文件路径
+     * @return 
+     * @throws HttpException, IOException 
+     */
+    public HttpResponse execute(HttpRequest request, String strParaFileName, String strFilePath) throws HttpException, IOException {
+        HttpClient httpclient = new HttpClient(connectionManager);
+
+        // 设置连接超时
+        int connectionTimeout = defaultConnectionTimeout;
+        if (request.getConnectionTimeout() > 0) {
+            connectionTimeout = request.getConnectionTimeout();
+        }
+        httpclient.getHttpConnectionManager().getParams().setConnectionTimeout(connectionTimeout);
+
+        // 设置回应超时
+        int soTimeout = defaultSoTimeout;
+        if (request.getTimeout() > 0) {
+            soTimeout = request.getTimeout();
+        }
+        httpclient.getHttpConnectionManager().getParams().setSoTimeout(soTimeout);
+
+        // 设置等待ConnectionManager释放connection的时间
+        httpclient.getParams().setConnectionManagerTimeout(defaultHttpConnectionManagerTimeout);
+
+        String charset = request.getCharset();
+        charset = charset == null ? DEFAULT_CHARSET : charset;
+        HttpMethod method = null;
+
+        //get模式且不带上传文件
+        if (request.getMethod().equals(HttpRequest.METHOD_GET)) {
+            method = new GetMethod(request.getUrl());
+            method.getParams().setCredentialCharset(charset);
+
+            // parseNotifyConfig会保证使用GET方法时，request一定使用QueryString
+            method.setQueryString(request.getQueryString());
+        } else if(strParaFileName.equals("") && strFilePath.equals("")) {
+        	//post模式且不带上传文件
+            method = new PostMethod(request.getUrl());
+            ((PostMethod) method).addParameters(request.getParameters());
+            method.addRequestHeader("Content-Type", "application/x-www-form-urlencoded; text/html; charset=" + charset);
+        }
+        else {
+        	//post模式且带上传文件
+            method = new PostMethod(request.getUrl());
+            List<Part> parts = new ArrayList<Part>();
+            for (int i = 0; i < request.getParameters().length; i++) {
+            	parts.add(new StringPart(request.getParameters()[i].getName(), request.getParameters()[i].getValue(), charset));
+            }
+            //增加文件参数，strParaFileName是参数名，使用本地文件
+            parts.add(new FilePart(strParaFileName, new FilePartSource(new File(strFilePath))));
+            
+            // 设置请求体
+            ((PostMethod) method).setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[0]), new HttpMethodParams()));
+        }
+
+        // 设置Http Header中的User-Agent属性
+        method.addRequestHeader("User-Agent", "Mozilla/4.0");
+        HttpResponse response = new HttpResponse();
+
+        try {
+            httpclient.executeMethod(method);
+            if (request.getResultType().equals(HttpResultType.STRING)) {
+                response.setStringResult(method.getResponseBodyAsString());
+            } else if (request.getResultType().equals(HttpResultType.BYTES)) {
+                response.setByteResult(method.getResponseBody());
+            }
+            response.setResponseHeaders(method.getResponseHeaders());
+        } catch (UnknownHostException ex) {
+
+            return null;
+        } catch (IOException ex) {
+
+            return null;
+        } catch (Exception ex) {
+
+            return null;
+        } finally {
+            method.releaseConnection();
+        }
+        return response;
+    }
+
+    /**
+     * 将NameValuePairs数组转变为字符串
+     * 
+     * @param nameValues
+     * @return
+     */
+    protected String toString(NameValuePair[] nameValues) {
+        if (nameValues == null || nameValues.length == 0) {
+            return "null";
+        }
+
+        StringBuffer buffer = new StringBuffer();
+
+        for (int i = 0; i < nameValues.length; i++) {
+            NameValuePair nameValue = nameValues[i];
+
+            if (i == 0) {
+                buffer.append(nameValue.getName() + "=" + nameValue.getValue());
+            } else {
+                buffer.append("&" + nameValue.getName() + "=" + nameValue.getValue());
+            }
+        }
+
+        return buffer.toString();
+    }
+}
+
+
+
+***********************************************************************************
+
+package com.sekorm.core.util.ali.util.httpClient;
+
+import org.apache.commons.httpclient.NameValuePair;
+
+/* *
+ *类名：HttpRequest
+ *功能：Http请求对象的封装
+ *详细：封装Http请求
+ *版本：3.3
+ *日期：2011-08-17
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+
+public class HttpRequest {
+
+    /** HTTP GET method */
+    public static final String METHOD_GET        = "GET";
+
+    /** HTTP POST method */
+    public static final String METHOD_POST       = "POST";
+
+    /**
+     * 待请求的url
+     */
+    private String             url               = null;
+
+    /**
+     * 默认的请求方式
+     */
+    private String             method            = METHOD_POST;
+
+    private int                timeout           = 0;
+
+    private int                connectionTimeout = 0;
+
+    /**
+     * Post方式请求时组装好的参数值对
+     */
+    private NameValuePair[]    parameters        = null;
+
+    /**
+     * Get方式请求时对应的参数
+     */
+    private String             queryString       = null;
+
+    /**
+     * 默认的请求编码方式
+     */
+    private String             charset           = "GBK";
+
+    /**
+     * 请求发起方的ip地址
+     */
+    private String             clientIp;
+
+    /**
+     * 请求返回的方式
+     */
+    private HttpResultType     resultType        = HttpResultType.BYTES;
+
+    public HttpRequest(HttpResultType resultType) {
+        super();
+        this.resultType = resultType;
+    }
+
+    /**
+     * @return Returns the clientIp.
+     */
+    public String getClientIp() {
+        return clientIp;
+    }
+
+    /**
+     * @param clientIp The clientIp to set.
+     */
+    public void setClientIp(String clientIp) {
+        this.clientIp = clientIp;
+    }
+
+    public NameValuePair[] getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(NameValuePair[] parameters) {
+        this.parameters = parameters;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public int getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
+    /**
+     * @return Returns the charset.
+     */
+    public String getCharset() {
+        return charset;
+    }
+
+    /**
+     * @param charset The charset to set.
+     */
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public HttpResultType getResultType() {
+        return resultType;
+    }
+
+    public void setResultType(HttpResultType resultType) {
+        this.resultType = resultType;
+    }
+
+}
+
+
+***********************************************************************************
+
+package com.sekorm.core.util.ali.util.httpClient;
+
+import java.io.UnsupportedEncodingException;
+
+import org.apache.commons.httpclient.Header;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+
+/* *
+ *类名：HttpResponse
+ *功能：Http返回对象的封装
+ *详细：封装Http返回信息
+ *版本：3.3
+ *日期：2011-08-17
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+
+public class HttpResponse {
+
+    /**
+     * 返回中的Header信息
+     */
+    private Header[] responseHeaders;
+
+    /**
+     * String类型的result
+     */
+    private String   stringResult;
+
+    /**
+     * btye类型的result
+     */
+    private byte[]   byteResult;
+
+    public Header[] getResponseHeaders() {
+        return responseHeaders;
+    }
+
+    public void setResponseHeaders(Header[] responseHeaders) {
+        this.responseHeaders = responseHeaders;
+    }
+
+    public byte[] getByteResult() {
+        if (byteResult != null) {
+            return byteResult;
+        }
+        if (stringResult != null) {
+            return stringResult.getBytes();
+        }
+        return null;
+    }
+
+    public void setByteResult(byte[] byteResult) {
+        this.byteResult = byteResult;
+    }
+
+    public String getStringResult() throws UnsupportedEncodingException {
+        if (stringResult != null) {
+            return stringResult;
+        }
+        if (byteResult != null) {
+            return new String(byteResult, AlipayConfig.input_charset);
+        }
+        return null;
+    }
+
+    public void setStringResult(String stringResult) {
+        this.stringResult = stringResult;
+    }
+
+}
+
+
+************************************************************************************
+
+
+/*
+ * Alipay.com Inc.
+ * Copyright (c) 2004-2005 All Rights Reserved.
+ */
+package com.sekorm.core.util.ali.util.httpClient;
+
+/* *
+ *类名：HttpResultType
+ *功能：表示Http返回的结果字符方式
+ *详细：表示Http返回的结果字符方式
+ *版本：3.3
+ *日期：2012-08-17
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+public enum HttpResultType {
+    /**
+     * 字符串方式
+     */
+    STRING,
+
+    /**
+     * 字节数组方式
+     */
+    BYTES
+}
+
+
+
+
+
+
+
+
+====================================================================================
+
+
+
+package com.sekorm.core.util.ali.util;
+
+import java.net.URLEncoder;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+import com.sekorm.core.util.ali.sign.Base64;
+import com.sekorm.core.util.ali.sign.RSA;
+
+/**
+ * 
+ * @describe 专门给APP签名使用
+ * 
+ * @author bowen_bao
+ * @date 2017年5月10日
+ */
+public class AlipayAppSubmit {
+    
+	
+	public static String getAliPermission(Map<String, String> sParaTemp){
+		Map<String, String> sPara = buildRequestPara(sParaTemp);
+		String prestr = createLinkString(sPara); 
+		return "alipay_sdk=alipay-sdk-java-dynamicVersionNo&"+prestr;
+	}
+	
+	
+	/**
+	 * 连接参数，并对一级value进行encode  UTF-8
+	 * @param params
+	 * @return
+	 */
+	private static String createLinkString(Map<String, String> params) {
+
+        List<String> keys = new ArrayList<String>(params.keySet());
+//        Collections.sort(keys);
+
+        String prestr = "";
+
+	        for (int i = 0; i < keys.size(); i++) {
+	            String key = keys.get(i);
+	            String value = params.get(key);
+	            String encodeV=URLEncoder.encode(value);
+	            if (i == keys.size() - 1) {//拼接时，不包括最后一个&字符
+	                prestr = prestr + key + "=" + encodeV;
+	            } else {
+	                prestr = prestr + key + "=" + encodeV + "&";
+	            }
+	        }
+        return prestr;
+    }
+	
+	/**
+     * 生成签名结果
+     * @param sPara 要签名的数组
+     * @return 签名结果字符串
+     */
+	private static String buildRequestMysignForApp(Map<String, String> sPara) {
+    	String prestr = createLinkString(sPara); //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+        String mysign = "";
+        	if(AlipayConfig.sign_type_APP_ALI.equals("RSA") ){
+            	mysign = RSA.sign(prestr, AlipayConfig.private_key_APP_ALI, AlipayConfig.charset, "RSA");
+            } else if(AlipayConfig.sign_type_APP_ALI.equals("RSA2")) {
+            	mysign = sign(prestr, AlipayConfig.private_key_APP_ALI, AlipayConfig.charset, "RSA2");
+            	
+        		boolean rs = RSA.verify(prestr, mysign, "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnsRQbWhUhY0RZX7yS4SnAh36sdllH3Dj7dEVvSbXYn1gSXo3Z2S3gGQUKQNYLVjCBOIntQnSvkvinK7yP/ukT0zKnGCiZjpKji4mYR5jaJjAPer/vI0FXOZOVCyAR7U9XO+esuN5IjmPKIzcfyzQaHzWfgWjREJXpPu0jOJ9SL3WFcpK5M10SrlMYnxJBlmyfh8oIqW5ouwCgJqUZelkCRXEulerK1H6SIENXG8/OUdx+VMTmAcsh5iGeHOzE/sBVUiGWMT5DfQdwbiGvLG7MDoZ+FbkAlB3hGiXdmyFk8SZ7Q0gCT2efxcpnkBvpEz7NEP7un0ufzU/kgaZebMf0QIDAQAB", "utf-8", "RSA2");
+        		
+            }
+        return mysign;
+    }
+	
+	
+	
+	
+	
+	/**
+	 * RSA签名
+	 * 
+	 * @param content
+	 *            待签名数据
+	 * @param privateKey
+	 *            商户私钥
+	 * @param input_charset
+	 *            编码格式
+	 * @param signType
+	 *            签名类型      
+	 * @return 签名值
+	 */
+	public static String sign(String content, String privateKey, 
+			String input_charset, String signType) {
+		try {
+			PKCS8EncodedKeySpec priPKCS8 = new PKCS8EncodedKeySpec(
+					Base64.decode(privateKey));
+			KeyFactory keyf = KeyFactory.getInstance("RSA");
+			PrivateKey priKey = keyf.generatePrivate(priPKCS8);
+
+			java.security.Signature signature = null;
+	        signature = java.security.Signature.getInstance("SHA256WithRSA");
+
+			signature.initSign(priKey);
+//			signature.update(content.getBytes(input_charset));
+			signature.update(content.getBytes());
+			byte[] signed = signature.sign();
+
+			return Base64.encode(signed);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+	
+	
+	
+    /**
+     * 生成要请求给支付宝的参数数组
+     * @param sParaTemp 请求前的参数数组
+     * @return 要请求的参数数组
+     */
+    private static Map<String, String> buildRequestPara(Map<String, String> sParaTemp) {
+        //除去数组中的空值和签名参数
+        Map<String, String> sPara = AlipayCore.paraFilter(sParaTemp);
+        //生成签名结果
+        String mysign = buildRequestMysignForApp(sPara);
+
+        //签名结果与签名方式加入请求提交参数组中
+        sPara.put("sign", mysign);
+        sPara.put("sign_type", AlipayConfig.sign_type_APP_ALI);
+
+        return sPara;
+    }
+
+    
+    
+}
+
+
+
+***************************************************************************************
+
+
+package com.sekorm.core.util.ali.util;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.httpclient.methods.multipart.FilePartSource;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+
+/* *
+ *类名：AlipayFunction
+ *功能：支付宝接口公用函数类
+ *详细：该类是请求、通知返回两个文件所调用的公用函数核心处理文件，不需要修改
+ *版本：3.3
+ *日期：2012-08-14
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+
+public class AlipayCore {
+	
+	private static final Logger log = LoggerFactory.getLogger(AlipayCore.class);
+
+    /** 
+     * 除去数组中的空值和签名参数
+     * @param sArray 签名参数组
+     * @return 去掉空值与签名参数后的新签名参数组
+     */
+    public static Map<String, String> paraFilter(Map<String, String> sArray) {
+
+        Map<String, String> result = new HashMap<String, String>();
+
+        if (sArray == null || sArray.size() <= 0) {
+            return result;
+        }
+
+        for (String key : sArray.keySet()) {
+            String value = sArray.get(key);
+            if (value == null || value.equals("") || key.equalsIgnoreCase("sign")
+                || key.equalsIgnoreCase("sign_type")) {
+                continue;
+            }
+            result.put(key, value);
+        }
+
+        return result;
+    }
+
+    /** 
+     * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
+     * @param params 需要排序并参与字符拼接的参数组
+     * @return 拼接后字符串
+     */
+    public static String createLinkString(Map<String, String> params) {
+
+        List<String> keys = new ArrayList<String>(params.keySet());
+        Collections.sort(keys);
+
+        String prestr = "";
+
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            String value = params.get(key);
+
+            if (i == keys.size() - 1) {//拼接时，不包括最后一个&字符
+                prestr = prestr + key + "=" + value;
+            } else {
+                prestr = prestr + key + "=" + value + "&";
+            }
+        }
+
+        return prestr;
+    }
+
+    /** 
+     * 写日志，方便测试（看网站需求，也可以改成把记录存入数据库）
+     * @param sWord 要写入日志里的文本内容
+     */
+    public static void logResult(String sWord) {
+//        FileWriter writer = null;
+        try {
+//            writer = new FileWriter(AlipayConfig.log_path + "alipay_log_test.log");
+//            writer.append(sWord);
+        	log.info(sWord);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } 
+//        finally {
+//            if (writer != null) {
+//                try {
+//                    writer.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+    }
+
+    /** 
+     * 生成文件摘要
+     * @param strFilePath 文件路径
+     * @param file_digest_type 摘要算法
+     * @return 文件摘要结果
+     */
+    public static String getAbstract(String strFilePath, String file_digest_type) throws IOException {
+        PartSource file = new FilePartSource(new File(strFilePath));
+    	if(file_digest_type.equals("MD5")){
+    		return DigestUtils.md5Hex(file.createInputStream());
+    	}
+    	else if(file_digest_type.equals("SHA")) {
+    		return DigestUtils.sha256Hex(file.createInputStream());
+    	}
+    	else {
+    		return "";
+    	}
+    }
+}
+
+
+
+
+***********************************************************************************************
+
+
+package com.sekorm.core.util.ali.util;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+import com.sekorm.core.util.ali.sign.RSA;
+
+/* *
+ *类名：AlipayNotify
+ *功能：支付宝通知处理类
+ *详细：处理支付宝各接口通知返回
+ *版本：3.3
+ *日期：2012-08-17
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考
+
+ *************************注意*************************
+ *调试通知返回时，可查看或改写log日志的写入TXT里的数据，来检查通知返回是否正常
+ */
+public class AlipayNotify {
+
+    /**
+     * 支付宝消息验证地址
+     */
+    private static final String HTTPS_VERIFY_URL = "https://mapi.alipay.com/gateway.do?service=notify_verify&";
+
+    /**
+     * 验证消息是否是支付宝发出的合法消息
+     * @param params 通知返回来的参数数组
+     * @return 验证结果
+     */
+    public static boolean verify(Map<String, String> params) {
+
+        //判断responsetTxt是否为true，isSign是否为true
+        //responsetTxt的结果不是true，与服务器设置问题、合作身份者ID、notify_id一分钟失效有关
+        //isSign不是true，与安全校验码、请求时的参数格式（如：带自定义参数等）、编码格式有关
+    	String responseTxt = "false";
+		if(params.get("notify_id") != null) {
+			String notify_id = params.get("notify_id");
+			responseTxt = verifyResponse(notify_id);
+		}
+	    String sign = "";
+	    if(params.get("sign") != null) {sign = params.get("sign");}
+	    boolean isSign = getSignVeryfy(params, sign);
+
+        //写日志记录（若要调试，请取消下面两行注释）
+        String sWord = "responseTxt=" + responseTxt + "\n isSign=" + isSign + "\n 返回回来的参数：" + AlipayCore.createLinkString(params);
+	    AlipayCore.logResult(sWord);
+
+        if (isSign && responseTxt.equals("true")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 根据反馈回来的信息，生成签名结果
+     * @param Params 通知返回来的参数数组
+     * @param sign 比对的签名结果
+     * @return 生成的签名结果
+     */
+	private static boolean getSignVeryfy(Map<String, String> Params, String sign) {
+    	//过滤空值、sign与sign_type参数
+    	Map<String, String> sParaNew = AlipayCore.paraFilter(Params);
+        //获取待签名字符串
+        String preSignStr = AlipayCore.createLinkString(sParaNew);
+        //获得签名验证结果
+        boolean isSign = false;
+        if(AlipayConfig.sign_type.equals("RSA")){
+        	isSign = RSA.verify(preSignStr, sign, AlipayConfig.alipay_public_key, AlipayConfig.input_charset, "RSA");
+        } else if(AlipayConfig.sign_type.equals("RSA2")) {
+        	isSign = RSA.verify(preSignStr, sign, AlipayConfig.alipay_public_key, AlipayConfig.input_charset, "RSA2");
+        }
+        return isSign;
+    }
+
+    /**
+    * 获取远程服务器ATN结果,验证返回URL
+    * @param notify_id 通知校验ID
+    * @return 服务器ATN结果
+    * 验证结果集：
+    * invalid命令参数不对 出现这个错误，请检测返回处理中partner和key是否为空 
+    * true 返回正确信息
+    * false 请检查防火墙或者是服务器阻止端口问题以及验证时间是否超过一分钟
+    */
+    private static String verifyResponse(String notify_id) {
+        //获取远程服务器ATN结果，验证是否是支付宝服务器发来的请求
+
+        String partner = AlipayConfig.partner;
+        String veryfy_url = HTTPS_VERIFY_URL + "partner=" + partner + "&notify_id=" + notify_id;
+
+        return checkUrl(veryfy_url);
+    }
+
+    /**
+    * 获取远程服务器ATN结果
+    * @param urlvalue 指定URL路径地址
+    * @return 服务器ATN结果
+    * 验证结果集：
+    * invalid命令参数不对 出现这个错误，请检测返回处理中partner和key是否为空 
+    * true 返回正确信息
+    * false 请检查防火墙或者是服务器阻止端口问题以及验证时间是否超过一分钟
+    */
+    private static String checkUrl(String urlvalue) {
+        String inputLine = "";
+
+        try {
+            URL url = new URL(urlvalue);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection
+                .getInputStream()));
+            inputLine = in.readLine().toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            inputLine = "";
+        }
+
+        return inputLine;
+    }
+}
+
+
+
+
+*****************************************************************************************
+
+
+package com.sekorm.core.util.ali.util;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+
+import com.sekorm.core.util.ali.config.AlipayConfig;
+import com.sekorm.core.util.ali.sign.RSA;
+
+/* *
+ *类名：AlipaySubmit
+ *功能：支付宝各接口请求提交类
+ *详细：构造支付宝各接口表单HTML文本，获取远程HTTP数据
+ *版本：3.3
+ *日期：2012-08-13
+ *说明：
+ *以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
+ *该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ */
+
+public class AlipaySubmit {
+    
+    /**
+     * 支付宝提供给商户的服务接入网关URL(新)
+     */
+    private static final String ALIPAY_GATEWAY_NEW = AlipayConfig.alipay_gateway_new;
+	
+    /**
+     * 生成签名结果
+     * @param sPara 要签名的数组
+     * @return 签名结果字符串
+     */
+	public static String buildRequestMysign(Map<String, String> sPara) {
+    	String prestr = AlipayCore.createLinkString(sPara); //把数组所有元素，按照“参数=参数值”的模式用“&”字符拼接成字符串
+        String mysign = "";
+        if(AlipayConfig.sign_type.equals("RSA") ){
+        	mysign = RSA.sign(prestr, AlipayConfig.private_key, AlipayConfig.input_charset, "RSA");
+        } else if(AlipayConfig.sign_type.equals("RSA2")) {
+        	mysign = RSA.sign(prestr, AlipayConfig.private_key, AlipayConfig.input_charset, "RSA2");
+        }
+        return mysign;
+    }
+	
+    /**
+     * 生成要请求给支付宝的参数数组
+     * @param sParaTemp 请求前的参数数组
+     * @return 要请求的参数数组
+     */
+    private static Map<String, String> buildRequestPara(Map<String, String> sParaTemp) {
+        //除去数组中的空值和签名参数
+        Map<String, String> sPara = AlipayCore.paraFilter(sParaTemp);
+        //生成签名结果
+        String mysign = buildRequestMysign(sPara);
+
+        //签名结果与签名方式加入请求提交参数组中
+        sPara.put("sign", mysign);
+        sPara.put("sign_type", AlipayConfig.sign_type);
+
+        return sPara;
+    }
+
+    /**
+     * 建立请求，以表单HTML形式构造（默认）
+     * @param sParaTemp 请求参数数组
+     * @param strMethod 提交方式。两个值可选：post、get
+     * @param strButtonName 确认按钮显示文字
+     * @return 提交表单HTML文本
+     */
+    public static String buildRequest(Map<String, String> sParaTemp, String strMethod, String strButtonName) {
+        //待请求参数数组
+        Map<String, String> sPara = buildRequestPara(sParaTemp);
+        List<String> keys = new ArrayList<String>(sPara.keySet());
+
+        StringBuffer sbHtml = new StringBuffer("<html>"
+        		+ "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">"
+        		+ "<title>支付宝即时到账交易接口</title>"
+        		+ "</head><body>");
+
+        sbHtml.append("<form id=\"alipaysubmit\" name=\"alipaysubmit\" action=\"" + ALIPAY_GATEWAY_NEW
+                      + "\" method=\"" + strMethod + "\">");
+
+        for (int i = 0; i < keys.size(); i++) {
+            String name = (String) keys.get(i);
+            String value = (String) sPara.get(name);
+
+            sbHtml.append("<input type=\"hidden\" name=\"" + name + "\" value=\"" + value + "\"/>");
+        }
+
+        //submit按钮控件请不要含有name属性
+        sbHtml.append("<input type=\"submit\" value=\"" + strButtonName + "\" style=\"display:none;\"></form></body>");
+        sbHtml.append("<script>document.forms['alipaysubmit'].submit();</script></html>");
+        return sbHtml.toString();
+    }
+    
+ 
+    
+    /**
+     * 用于防钓鱼，调用接口query_timestamp来获取时间戳的处理函数
+     * 注意：远程解析XML出错，与服务器是否支持SSL等配置有关
+     * @return 时间戳字符串
+     * @throws IOException
+     * @throws DocumentException
+     * @throws MalformedURLException
+     */
+	@SuppressWarnings("unchecked")
+	public static String query_timestamp() throws MalformedURLException,
+                                                        DocumentException, IOException {
+        //构造访问query_timestamp接口的URL串
+        String strUrl = ALIPAY_GATEWAY_NEW + "service=query_timestamp&partner=" + AlipayConfig.partner + "&_input_charset" +AlipayConfig.input_charset;
+        StringBuffer result = new StringBuffer();
+
+        SAXReader reader = new SAXReader();
+        Document doc = reader.read(new URL(strUrl).openStream());
+
+        List<Node> nodeList = doc.selectNodes("//alipay/*");
+
+        for (Node node : nodeList) {
+            // 截取部分不需要解析的信息
+            if (node.getName().equals("is_success") && node.getText().equals("T")) {
+                // 判断是否有成功标示
+                List<Node> nodeList1 = doc.selectNodes("//response/timestamp/*");
+                for (Node node1 : nodeList1) {
+                    result.append(node1.getText());
+                }
+            }
+        }
+        return result.toString();
+    }
+}
+
+
+
+
+```
 
 
