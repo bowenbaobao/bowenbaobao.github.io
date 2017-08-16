@@ -32,6 +32,35 @@ http://localhost:5601  elastic  changeme
 
 #### Logstash 安装
 
+bin/logstash.bat -f  ../config/logstash.conf
+
+logstash.conf如下
+
+```
+ input { 
+  file {
+  path => "E:/logstash-5.5.0/tmp/*.log"
+    type => "system"
+    start_position => "beginning"
+    codec=>plain{charset=>"UTF-8"}
+    }
+}
+
+output {
+  elasticsearch {
+  
+  user => elastic
+  password => changeme
+  
+  hosts => ["localhost:9200"] 
+    index => "nginx"
+    template_overwrite => true
+  }
+  stdout { codec => rubydebug }
+}
+
+```
+
 ### java api
 
 #### ESUtils
