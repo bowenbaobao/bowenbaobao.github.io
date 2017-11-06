@@ -1,6 +1,6 @@
 ---
 layout: post
-title: lucene Score 笔记
+title: Score 笔记
 permalink: /:categories/luceneScore_url/
 date: 2017-11-06 09:30:15 +0800
 category: Java Search
@@ -34,6 +34,3 @@ tags: [lucene]
 
 
 ```
-
-
-
