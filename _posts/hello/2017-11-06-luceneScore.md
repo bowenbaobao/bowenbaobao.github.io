@@ -1,7 +1,7 @@
 ---
 layout: post
-title: lucene 分值 笔记
-permalink: /:categories/lucene_score_url/
+title: lucene Score 笔记
+permalink: /:categories/luceneScore_url/
 date: 2017-11-06 09:30:15 +0800
 category: Java Search
 tags: [lucene]
